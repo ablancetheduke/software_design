@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}情况总览{% endblock %}
+
+{% block content %}
+<h1>👋 欢迎，{{ student_name }}</h1>
+
+<!-- Stat Cards -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="value">{{ "%.2f"|format(overview.get('weighted_average', 0)) }}</div>
+        <div class="label">加权平均分</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" style="color:#8250df;">{{ "%.2f"|format(overview.get('gpa', 0)) }}</div>
+        <div class="label">绩点 (4.0制)</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" style="color:#388a34;">{{ "%.1f"|format(overview.get('total_credits', 0)) }}</div>
+        <div class="label">已修学分</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" style="color:#d18616;">{{ course_count }}</div>
+        <div class="label">课程总数</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" style="color:#3b82f6;">{{ exp_count }}</div>
+        <div class="label">经历记录</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" style="color:#cd3131;">{{ ach_count }}</div>
+        <div class="label">荣誉奖项</div>
+    </div>
+</div>
+
+{% if insight %}
+<!-- Insight -->
+<div class="card">
+    <h2>🧭 发展分析：{{ insight.level }}</h2>
+    {% if insight.highlights %}
+    <div class="insight info">
+        <strong>亮点：</strong>
+        {% for h in insight.highlights %}{{ h }}{% if not loop.last %}；{% endif %}{% endfor %}
+    </div>
+    {% endif %}
+    {% if insight.risks %}
+    <div class="insight warn">
+        <strong>关注：</strong>
+        {% for r in insight.risks %}{{ r }}{% if not loop.last %}；{% endif %}{% endfor %}
+    </div>
+    {% endif %}
+    {% if insight.suggestions %}
+    <ul style="margin-top: 12px; padding-left: 20px; color: #616161; font-size: 14px;">
+        {% for s in insight.suggestions %}
+        <li>{{ s }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Semester Trend -->
+{% if semester_trend %}
+<div class="card">
+    <h2>📅 学期趋势</h2>
+    <table>
+        <thead>
+            <tr><th>学期</th><th>GPA</th><th>加权平均</th><th>算术平均</th><th>课程数</th></tr>
+        </thead>
+        <tbody>
+            {% for sem in semester_trend %}
+            <tr>
+                <td><strong>{{ sem.semester }}</strong></td>
+                <td>{{ "%.2f"|format(sem.gpa) }}</td>
+                <td>{{ "%.2f"|format(sem.weighted_average) }}</td>
+                <td>{{ "%.2f"|format(sem.arithmetic_average) }}</td>
+                <td>{{ sem.course_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Recent courses -->
+<div class="card">
+    <h2>📚 最近课程</h2>
+    {% if courses %}
+    <table>
+        <thead><tr><th>课程</th><th>学分</th><th>成绩</th><th>学期</th><th>类别</th></tr></thead>
+        <tbody>
+            {% for c in courses[:8] %}
+            <tr>
+                <td><strong>{{ c.name }}</strong></td>
+                <td>{{ "%.1f"|format(c.credit) }}</td>
+                <td>
+                    {% if c.grade >= 90 %}<span class="badge badge-green">{{ c.grade }}</span>
+                    {% elif c.grade >= 80 %}<span class="badge badge-blue">{{ c.grade }}</span>
+                    {% elif c.grade >= 60 %}<span class="badge badge-orange">{{ c.grade }}</span>
+                    {% else %}<span class="badge badge-red">{{ c.grade }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-muted">{{ c.semester }}</td>
+                <td>{{ c.category }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">还没有录入课程，去 <a href="/courses">课程管理</a> 添加吧。</p>
+    {% endif %}
+</div>
+
+<!-- Recent experiences -->
+<div class="card">
+    <h2>🔬 经历概览</h2>
+    {% if experiences %}
+    <table>
+        <thead><tr><th>标题</th><th>类型</th><th>组织</th><th>时间</th></tr></thead>
+        <tbody>
+            {% for e in experiences[:5] %}
+            <tr>
+                <td><strong>{{ e.title }}</strong></td>
+                <td><span class="badge badge-purple">{{ e.exp_type }}</span></td>
+                <td class="text-muted">{{ e.organization }}</td>
+                <td class="text-muted">{{ e.start_date }} - {{ e.end_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">还没有记录经历。</p>
+    {% endif %}
+</div>
+{% endblock %}

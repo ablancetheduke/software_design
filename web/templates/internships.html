@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}实习追踪{% endblock %}
+
+{% block content %}
+<h1>💼 实习追踪</h1>
+
+<!-- Add Form -->
+<details style="margin-bottom: 16px;">
+    <summary style="cursor:pointer; font-weight:600; font-size:15px; padding:8px 0;">+ 添加实习投递</summary>
+    <form method="post" action="/internships/add" style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:16px; margin-top:8px;">
+        <input type="hidden" name="app_id" value="">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <input name="company" placeholder="公司名称 *" required style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <input name="position" placeholder="岗位名称" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <input name="direction" placeholder="方向" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <select name="status" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+                <option>待投递</option><option>已投递</option><option>笔试</option><option>一面</option><option>二面</option><option>已通过</option><option>拒绝</option>
+            </select>
+            <input name="apply_date" placeholder="投递日期" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <input name="deadline" placeholder="截止日期" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+        </div>
+        <input name="link" placeholder="投递链接" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:4px; margin-top:8px;">
+        <input name="note" placeholder="备注" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:4px; margin-top:8px;">
+        <button type="submit" class="btn btn-primary" style="margin-top:10px;">添加投递</button>
+    </form>
+</details>
+
+{% set pending = internships|selectattr('status', 'eq', '待投递')|list %}
+{% set submitted = internships|rejectattr('status', 'eq', '待投递')|list %}
+
+<div class="stat-grid">
+    <div class="stat-card" style="border-left:3px solid var(--orange);">
+        <div class="value" style="color:var(--orange);">{{ pending|length }}</div>
+        <div class="label">待投递</div>
+    </div>
+    <div class="stat-card" style="border-left:3px solid var(--accent);">
+        <div class="value">{{ submitted|length }}</div>
+        <div class="label">已投递 / 进行中</div>
+    </div>
+</div>
+
+{% if internships %}
+<div class="card">
+    <h2>全部记录</h2>
+    <table>
+        <thead>
+            <tr><th>公司</th><th>岗位</th><th>状态</th><th>投递日</th><th>截止日</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+            {% for i in internships %}
+            <tr>
+                <td><strong>{{ i.company }}</strong></td>
+                <td>{{ i.position }}</td>
+                <td>
+                    {% if i.status == '待投递' %}<span class="badge badge-orange">{{ i.status }}</span>
+                    {% elif i.status == '已投递' %}<span class="badge badge-blue">{{ i.status }}</span>
+                    {% elif i.status in ('笔试','一面','二面') %}<span class="badge badge-purple">{{ i.status }}</span>
+                    {% elif i.status == '拒绝' %}<span class="badge badge-red">{{ i.status }}</span>
+                    {% else %}<span class="badge badge-green">{{ i.status }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-muted" style="font-size:12px;">{{ i.apply_date }}</td>
+                <td class="text-muted" style="font-size:12px;">{{ i.deadline }}</td>
+                <td><a href="/internships/delete/{{ i.app_id }}" onclick="return confirm('确定删除 {{ i.company }}？')" style="color:#cd3131; font-size:12px;">删除</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card"><p class="text-muted">还没有实习投递记录。用上方的表单添加。</p></div>
+{% endif %}
+{% endblock %}

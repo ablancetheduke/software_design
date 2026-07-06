@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PDPTool{% endblock %} - 个人发展规划工具</title>
+    <link rel="stylesheet" href="/static/style.css">
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="logo">PDP<span>Tool</span></div>
+    <nav>
+        {% set nav_items = [
+            ('dashboard', '📊', '情况总览'),
+            ('courses', '📚', '课程管理'),
+            ('gpa', '📈', '成绩分析'),
+            ('experiences', '🔬', '经历成果'),
+            ('internships', '💼', '实习追踪'),
+            ('resume', '📄', '简历工作台'),
+            ('ai', '🤖', 'AI 助手'),
+            ('coding', '💻', '编程练习'),
+        ] %}
+        {% for key, icon, label in nav_items %}
+        <a href="/{{ '' if key == 'dashboard' else key }}" class="{{ 'active' if nav_page == key else '' }}">
+            <span class="icon">{{ icon }}</span>{{ label }}
+        </a>
+        {% endfor %}
+    </nav>
+    <div class="version">v1.1.0 · FastAPI</div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+    {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>

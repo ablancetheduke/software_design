@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}简历工作台{% endblock %}
+
+{% block content %}
+<h1>📄 简历工作台</h1>
+
+<div class="card">
+    <div class="btn-group" style="margin-bottom:16px;">
+        <a href="/api/resume/html" class="btn btn-primary">下载 HTML 简历</a>
+        <a href="/api/resume/pdf" class="btn">下载 PDF 简历</a>
+    </div>
+
+    <details style="margin-bottom:16px;">
+        <summary style="cursor:pointer; color:var(--fg-muted); font-size:14px;">
+            配置信息：{{ options.get('name','') }} ｜ {{ options.get('school','') }} ｜ {{ options.get('major','') }}
+        </summary>
+        <table style="margin-top:8px; font-size:13px;">
+            <tr><td style="width:80px;">姓名</td><td>{{ options.get('name','') }}</td><td style="width:80px;">电话</td><td>{{ options.get('phone','') }}</td></tr>
+            <tr><td>邮箱</td><td>{{ options.get('email','') }}</td><td>城市</td><td>{{ options.get('city','') }}</td></tr>
+            <tr><td>学校</td><td>{{ options.get('school','') }}</td><td>专业</td><td>{{ options.get('major','') }}</td></tr>
+            <tr><td>学历</td><td>{{ options.get('degree','') }}</td><td>意向</td><td>{{ options.get('intent','') }}</td></tr>
+        </table>
+    </details>
+
+    <div class="resume-preview">
+        {{ resume_html | safe }}
+    </div>
+</div>
+{% endblock %}

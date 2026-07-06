@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}编程练习{% endblock %}
+
+{% block content %}
+<h1>💻 编程练习</h1>
+<p class="text-muted" style="margin-bottom:16px;">
+    来自 coding_problems/ 题库。在桌面版中可以使用 AI 讲解、代码评审和随机出题功能。
+</p>
+
+{% if problems %}
+<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px;">
+    {% for p in problems %}
+    <div class="card" style="cursor:pointer;" onclick="this.querySelector('details').open = !this.querySelector('details').open">
+        <h3 style="margin-bottom:6px;">{{ loop.index }}. {{ p.name }}</h3>
+        <p class="text-muted" style="font-size:12px;">{{ p.content[:120] }}...</p>
+        <details>
+            <summary style="cursor:pointer; font-size:12px; color:var(--accent);">展开题目</summary>
+            <pre style="background:#f9fafb; padding:12px; border-radius:6px; font-size:13px; line-height:1.6; white-space:pre-wrap; margin-top:8px; max-height:400px; overflow-y:auto;">{{ p.content }}</pre>
+        </details>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <p class="text-muted">题库为空。在项目 coding_problems/ 目录下放 .md 文件即可。</p>
+</div>
+{% endif %}
+{% endblock %}
