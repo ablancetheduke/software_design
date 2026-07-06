@@ -3,31 +3,26 @@
 
 {% block content %}
 <h1>💻 编程练习</h1>
-<p class="page-subtitle">来自 coding_problems/ 题库 · 桌面版支持 AI 讲解与随机出题</p>
+<p class="text-muted" style="margin-bottom:16px;">
+    来自 coding_problems/ 题库。在桌面版中可以使用 AI 讲解、代码评审和随机出题功能。
+</p>
 
 {% if problems %}
 <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px;">
     {% for p in problems %}
-    <div class="card" style="cursor:pointer;transition:all var(--transition);"
-         onmouseover="this.style.boxShadow='var(--card-hover)';this.style.transform='translateY(-2px)';"
-         onmouseout="this.style.boxShadow='var(--shadow)';this.style.transform='translateY(0)';"
-         onclick="this.querySelector('details').open = !this.querySelector('details').open">
-        <h3 style="margin-bottom:6px;font-weight:700;font-size:15px;">
-            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--primary-gradient);color:#fff;font-size:11px;font-weight:700;margin-right:8px;">{{ loop.index }}</span>
-            {{ p.name }}
-        </h3>
-        <p class="text-muted" style="font-size:12px;margin-left:32px;">{{ p.content[:120] }}...</p>
-        <details style="margin-left:32px;margin-top:8px;">
-            <summary style="cursor:pointer;font-size:12px;color:var(--primary);font-weight:600;">展开题目 →</summary>
-            <pre style="background:rgba(0,0,0,0.02);padding:16px;border-radius:var(--radius-sm);font-size:13px;line-height:1.7;white-space:pre-wrap;margin-top:10px;max-height:400px;overflow-y:auto;border:1px solid rgba(0,0,0,0.04);">{{ p.content }}</pre>
+    <div class="card" style="cursor:pointer;" onclick="this.querySelector('details').open = !this.querySelector('details').open">
+        <h3 style="margin-bottom:6px;">{{ loop.index }}. {{ p.name }}</h3>
+        <p class="text-muted" style="font-size:12px;">{{ p.content[:120] }}...</p>
+        <details>
+            <summary style="cursor:pointer; font-size:12px; color:var(--accent);">展开题目</summary>
+            <pre style="background:#f9fafb; padding:12px; border-radius:6px; font-size:13px; line-height:1.6; white-space:pre-wrap; margin-top:8px; max-height:400px; overflow-y:auto;">{{ p.content }}</pre>
         </details>
     </div>
     {% endfor %}
 </div>
 {% else %}
-<div class="card" style="text-align:center;padding:40px;">
-    <div style="font-size:48px;margin-bottom:12px;">💻</div>
-    <p class="text-muted">题库为空。在项目 coding_problems/ 目录下放 .md 文件即可添加题目。</p>
+<div class="card">
+    <p class="text-muted">题库为空。在项目 coding_problems/ 目录下放 .md 文件即可。</p>
 </div>
 {% endif %}
 {% endblock %}

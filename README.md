@@ -12,7 +12,7 @@
 
 ## 项目简介
 
-PDPTool 定位为 **"大学生个人发展操作系统"** — 以学业数据为中心，打通 **课程 → GPA → 培养方案 → 经历 → 简历 → 实习投递 → 升学规划 → 技能提升** 的完整链路，帮助大学生集中管理四年学习与发展历程。
+PDPTool 定位为 **"大学生个人发展操作系统"** — 以学业数据为中心，打通 **课程 → GPA → 培养方案 → 经历 → 简历 → 实习投递 → 技能提升** 的完整链路，帮助大学生集中管理四年学习与发展历程。
 
 ### 核心功能
 
@@ -22,12 +22,11 @@ PDPTool 定位为 **"大学生个人发展操作系统"** — 以学业数据为
 | 📊 GPA 分析 | 标准 4.0 绩点、加权/算术平均、学期趋势图 |
 | 🎓 培养方案审计 | 解析培养方案、智能匹配已修课程、学分缺口可视化 |
 | 🏆 经历荣誉 | 项目/科研/竞赛/实习经历分类管理、奖项证书记录 |
-| 📄 简历工作台 | 一键生成 HTML/Markdown 简历、AI STAR 改写、Word 导出 |
+| 📄 简历工作台 | 一键生成 HTML/Markdown 简历、AI STAR 改写 |
 | 💼 实习追踪 | 投递状态看板、截止日期提醒、面试进度管理 |
-| 🎯 升学规划 | 研究生申请管理、甘特图时间线、培养方案审核 |
 | 🤖 AI 顾问 | 结合个人全量数据的智能发展规划建议 |
 | 💻 编程练习 | 内建算法题库、AI 代码评审与渐进提示 |
-| 🌐 Web 版 | FastAPI + Jinja2 浏览器访问（支持云端部署） |
+| 🌐 Web 版 | FastAPI + Jinja2 浏览器访问（支持部署） |
 
 ### 技术栈
 
@@ -36,7 +35,7 @@ PDPTool 定位为 **"大学生个人发展操作系统"** — 以学业数据为
 - **数据库**：SQLite（零配置本地部署）
 - **AI**：DeepSeek API（OpenAI 兼容协议）
 - **语言**：Python 3.10+
-- **打包**：PyInstaller → 独立 EXE（`PDPTool.spec`）
+- **打包**：PyInstaller → 独立 EXE
 
 ## 快速开始
 
@@ -50,12 +49,6 @@ pip install -r requirements_web.txt
 python web_app.py
 ```
 
-> 🖥️ **双击即用**：项目根目录下的 `PDPTool.spec` 可通过 PyInstaller 打包为独立 EXE 文件：
-> ```bash
-> pyinstaller PDPTool.spec
-> ```
-> 打包后生成的 `PDPTool.exe` 可脱离 Python 环境直接双击运行。
-
 AI 功能需要 DeepSeek API Key（可选）：
 ```bash
 DEEPSEEK_API_KEY=你的key
@@ -66,12 +59,11 @@ DEEPSEEK_API_KEY=你的key
 ```text
 ├── main.py                    # 桌面版入口
 ├── web_app.py                 # Web 版入口
-├── PDPTool.spec               # PyInstaller 打包配置（→ 独立 EXE）
 ├── src/
-│   ├── models/                # 数据模型（含研究生申请模型）
+│   ├── models/                # 数据模型
 │   ├── database/              # SQLite 连接、迁移、仓储层
-│   ├── services/              # 业务逻辑（GPA、审计、AI、简历、升学）
-│   ├── views/                 # PySide6 界面、甘特图组件
+│   ├── services/              # 业务逻辑（GPA、审计、AI、简历等）
+│   ├── views/                 # PySide6 界面与组件
 │   └── utils/                 # 常量、主题、工具函数
 ├── tests/                     # pytest 单元测试
 ├── training_plans/            # 培养方案（2023/2024/2025 级）
@@ -92,4 +84,4 @@ DEEPSEEK_API_KEY=你的key
 
 ## 维护者
 
-如对架构设计、实现细节或设计模式应用有疑问，欢迎直接联系 [@ablancetheduke](https://github.com/ablancetheduke) 提 Issue 或参考 [完整开发仓库](https://github.com/ablancetheduke/Software-architecture-design-group-assignment) 中的提交历史与设计文档。
+如对架构设计、实现细节或设计模式应用有疑问，欢迎直接联系[@ablancetheduke](https://github.com/ablancetheduke) 提 Issue 或参考 [完整开发仓库](https://github.com/ablancetheduke/Software-architecture-design-group-assignment) 中的提交历史与设计文档。

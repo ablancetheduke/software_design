@@ -8,7 +8,7 @@ from .connection import DatabaseConnection
 class Migration:
     """Handles database schema initialization and migration."""
 
-    VERSION = 6
+    VERSION = 4
 
     @staticmethod
     def run(db: DatabaseConnection = None):
@@ -34,10 +34,6 @@ class Migration:
             Migration._migrate_v3(db)
         if current_version < 4:
             Migration._migrate_v4(db)
-        if current_version < 5:
-            Migration._migrate_v5(db)
-        if current_version < 6:
-            Migration._migrate_v6(db)
 
     @staticmethod
     def _migrate_v1(db: DatabaseConnection):
@@ -181,54 +177,6 @@ class Migration:
         db.execute(
             "INSERT INTO _schema_version (version) VALUES (?)",
             (4,)
-        )
-
-
-    @staticmethod
-    def _migrate_v5(db: DatabaseConnection):
-        """Graduate school application tracking table."""
-        db.execute("""
-            CREATE TABLE IF NOT EXISTS graduate_applications (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                school TEXT NOT NULL,
-                major TEXT NOT NULL,
-                degree_type TEXT DEFAULT '硕士',
-                batch TEXT DEFAULT '夏令营',
-                status TEXT DEFAULT '了解中',
-                apply_date TEXT DEFAULT '',
-                deadline TEXT DEFAULT '',
-                advisor TEXT DEFAULT '',
-                advisor_status TEXT DEFAULT '未联系',
-                link TEXT DEFAULT '',
-                note TEXT DEFAULT '',
-                ps_ready INTEGER DEFAULT 0,
-                recommendation_ready INTEGER DEFAULT 0,
-                cv_ready INTEGER DEFAULT 0,
-                transcript_ready INTEGER DEFAULT 0,
-                ranking_ready INTEGER DEFAULT 0,
-                english_ready INTEGER DEFAULT 0,
-                interview_date TEXT DEFAULT '',
-                interview_notes TEXT DEFAULT ''
-            )
-        """)
-        db.execute(
-            "INSERT INTO _schema_version (version) VALUES (?)",
-            (5,)
-        )
-
-
-    @staticmethod
-    def _migrate_v6(db: DatabaseConnection):
-        """Add college and sort_order to graduate_applications."""
-        db.execute(
-            "ALTER TABLE graduate_applications ADD COLUMN college TEXT DEFAULT ''"
-        )
-        db.execute(
-            "ALTER TABLE graduate_applications ADD COLUMN sort_order INTEGER DEFAULT 0"
-        )
-        db.execute(
-            "INSERT INTO _schema_version (version) VALUES (?)",
-            (6,)
         )
 
 

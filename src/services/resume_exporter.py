@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import html as _html
 import json as _json
+import os
 from typing import Any, Dict, List, Optional
 
 # ── helpers ────────────────────────────────────────────────────────────────
@@ -62,6 +63,7 @@ def compute_default_options(
         "phone": "",
         "city": "",
         "intent": "",
+        "avatar_path": "",
         # education
         "school": "",
         "major": "",
@@ -71,33 +73,30 @@ def compute_default_options(
         "age": "",
         # skills
         "skills_body": "",
-        # sections
-        "academic_body": "",
-        "research_body": "",
+        # project
+        "project_name": "",
+        "project_body": "",
+        # internship / awards
         "internship": "",
-        "competition_body": "",
-        "other_body": "",
         "awards": "",
+        # extra
+        "custom_content": "",
         # section titles
         "section_title_intent": "求职意向",
         "section_title_education": "教育背景",
         "section_title_skills": "技能特长",
-        "section_title_academic": "学术经历",
-        "section_title_research": "研究经历",
+        "section_title_projects": "项目经验",
         "section_title_internship": "实习经历",
-        "section_title_competition": "竞赛经历",
-        "section_title_other": "其它经历",
-        "section_title_awards": "荣誉奖项",
+        "section_title_awards": "竞赛获奖",
+        "section_title_custom": "自我评价",
         # visibility toggles
         "show_intent": True,
         "show_education": True,
         "show_skills": True,
-        "show_academic": True,
-        "show_research": True,
+        "show_projects": True,
         "show_internship": True,
-        "show_competition": True,
-        "show_other": True,
         "show_awards": True,
+        "show_custom": True,
     }
 
     if student is not None:
@@ -139,33 +138,9 @@ def compute_default_options(
                 lines.append(f"  {a.description}")
         options["awards"] = "\n".join(lines)
 
-    # academic body from experiences with type "学术经历"
-    if experiences and not options.get("academic_body"):
-        acad_exps = [e for e in experiences if e.exp_type == "学术经历"]
-        if acad_exps:
-            lines = []
-            for ae in acad_exps:
-                dates = f"{ae.start_date} - {ae.end_date}".strip(" -")
-                lines.append(f"• {ae.title} ｜ {ae.organization or '成果'} ｜ {dates}")
-                if ae.description:
-                    lines.append(f"  {ae.description}")
-            options["academic_body"] = "\n".join(lines)
-
-    # research body from experiences with type "研究经历"
-    if experiences and not options.get("research_body"):
-        research_exps = [e for e in experiences if e.exp_type == "研究经历"]
-        if research_exps:
-            lines = []
-            for re_exp in research_exps:
-                dates = f"{re_exp.start_date} - {re_exp.end_date}".strip(" -")
-                lines.append(f"• {re_exp.title} ｜ {re_exp.organization or ''} ｜ {dates}")
-                if re_exp.description:
-                    lines.append(f"  {re_exp.description}")
-            options["research_body"] = "\n".join(lines)
-
-    # internship from experiences with type "实习经历"
+    # internship from experiences with type "实习"
     if experiences and not options.get("internship"):
-        internship_exps = [e for e in experiences if e.exp_type == "实习经历"]
+        internship_exps = [e for e in experiences if e.exp_type == "实习"]
         if internship_exps:
             lines = []
             for ie in internship_exps:
@@ -175,17 +150,21 @@ def compute_default_options(
                     lines.append(f"  {ie.description}")
             options["internship"] = "\n".join(lines)
 
-    # other body from experiences with type "其它"
-    if experiences and not options.get("other_body"):
-        other_exps = [e for e in experiences if e.exp_type == "其它"]
-        if other_exps:
+    # project body from experiences with type "项目"/"科研"
+    if experiences and not options.get("project_body"):
+        project_exps = [
+            e for e in experiences if e.exp_type in ("项目", "科研")
+        ]
+        if project_exps:
+            first = project_exps[0]
+            options["project_name"] = _none_str(first.title)
             lines = []
-            for oe in other_exps:
-                dates = f"{oe.start_date} - {oe.end_date}".strip(" -")
-                lines.append(f"• {oe.title} ｜ {oe.organization or ''} ｜ {dates}")
-                if oe.description:
-                    lines.append(f"  {oe.description}")
-            options["other_body"] = "\n".join(lines)
+            for pe in project_exps:
+                dates = f"{pe.start_date} - {pe.end_date}".strip(" -")
+                lines.append(f"• {pe.title} @ {pe.organization} ｜ {dates}")
+                if pe.description:
+                    lines.append(f"  {pe.description}")
+            options["project_body"] = "\n".join(lines)
 
     return options
 
@@ -203,104 +182,104 @@ RESUME_HTML_TEMPLATE = """<!DOCTYPE html>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
   body {{
     font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
-    background: #e8e4dd;
-    color: #1a1a1a;
-    line-height: 1.6;
-    padding: 28px 14px;
+    background: #f2f3f5;
+    color: #1e1e1e;
+    line-height: 1.65;
+    padding: 32px 16px;
   }}
   .page {{
-    max-width: 780px;
+    max-width: 820px;
     margin: 0 auto;
     background: #ffffff;
-    padding: 48px 56px 44px 56px;
-    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    padding: 52px 58px 48px 58px;
   }}
-
-  /* ── Header ── */
   .header {{
-    text-align: center;
-    margin-bottom: 18px;
-  }}
-  .header .name {{
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    margin-bottom: 4px;
-  }}
-  .header .contact {{
-    font-size: 11px;
-    color: #555;
-    letter-spacing: 0.3px;
-  }}
-
-  /* ── Section ── */
-  .section {{
-    margin-top: 16px;
-  }}
-  .section-title {{
-    font-size: 13px;
-    font-weight: 700;
-    border-bottom: 1px solid #333;
-    padding-bottom: 3px;
-    margin-bottom: 6px;
-    letter-spacing: 1px;
-  }}
-
-  /* ── Entry (title + date line) ── */
-  .entry {{
-    margin-bottom: 4px;
-  }}
-  .entry-title {{
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    font-size: 11.5px;
+    align-items: flex-start;
+    border-bottom: 2px solid #1f4e79;
+    padding-bottom: 22px;
+    margin-bottom: 6px;
+  }}
+  .header-left h1 {{
+    font-size: 28px;
+    color: #111;
+    margin-bottom: 8px;
+  }}
+  .header-left .subtitle {{
+    font-size: 15px;
+    color: #4b5563;
+    margin-bottom: 4px;
+  }}
+  .header-left .contact {{
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 6px;
+  }}
+  .header-right img {{
+    width: 96px;
+    height: 118px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+  }}
+  .header-right .avatar-placeholder {{
+    width: 96px;
+    height: 118px;
+    border: 1px dashed #d1d5db;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 12px;
+    text-align: center;
+  }}
+  .section {{
+    margin-top: 20px;
+  }}
+  .section-title {{
+    font-size: 17px;
     font-weight: 700;
-    margin-bottom: 1px;
+    color: #1f4e79;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
   }}
-  .entry-title .title-text {{ }}
-  .entry-title .title-date {{
-    font-weight: 400;
-    color: #555;
-    font-size: 11px;
-    white-space: nowrap;
-    margin-left: 12px;
+  .section-body {{
+    font-size: 14px;
+    color: #333;
+    line-height: 1.75;
   }}
-
-  /* ── Bullet ── */
-  .bullets {{
+  .section-body ul {{
     list-style: none;
     padding-left: 0;
   }}
-  .bullets li {{
+  .section-body li {{
+    margin-bottom: 10px;
+    padding-left: 16px;
     position: relative;
-    padding-left: 14px;
-    margin-bottom: 2px;
-    font-size: 11px;
-    line-height: 1.65;
-    text-align: justify;
   }}
-  .bullets li::before {{
+  .section-body li::before {{
     content: "•";
     position: absolute;
     left: 0;
-    color: #555;
+    color: #1f4e79;
     font-weight: bold;
   }}
-
-  /* ── Bottom info ── */
-  .bottom-line {{
-    font-size: 10.5px;
-    margin-bottom: 1px;
-    line-height: 1.55;
+  .section-body .item-title {{
+    font-weight: 600;
+    color: #111;
   }}
-  .bottom-line .lbl {{
-    font-weight: 700;
+  .section-body .item-meta {{
+    font-size: 13px;
+    color: #6b7280;
   }}
-
   @media print {{
     body {{ background: #fff; padding: 0; }}
-    .page {{ box-shadow: none; max-width: 100%; padding: 36px 44px; }}
+    .page {{ box-shadow: none; border-radius: 0; max-width: 100%; }}
   }}
 </style>
 </head>
@@ -338,143 +317,129 @@ def build_resume_html(
 
     # ── header ──
     name = _esc(options.get("name") or (student.name if student else "姓名"))
+    title = _esc(options.get("title") or "个人发展简历")
     email = _esc(options.get("email") or (student.email if student else ""))
     phone = _esc(options.get("phone") or (student.phone if student else ""))
+    city = _esc(options.get("city") or "")
+    intent = _esc(options.get("intent") or "")
+    summary_text = _esc(options.get("summary") or (student.summary if student else ""))
+    avatar_path = options.get("avatar_path") or ""
 
-    contact_bits = []
-    if phone:
-        contact_bits.append(f"手机：(+86) {phone}")
-    if email:
-        contact_bits.append(f"邮箱：{email}")
-    contact_line = "    ".join(contact_bits) if contact_bits else "联系方式待补充"
+    contact_parts = [p for p in [city, phone, email] if p]
+    if not contact_parts:
+        contact_parts = ["联系方式待补充"]
 
     body_parts: List[str] = []
 
-    # header
+    # header block
     body_parts.append('<div class="header">')
-    body_parts.append(f'<div class="name">{name}</div>')
-    body_parts.append(f'<div class="contact">{contact_line}</div>')
-    body_parts.append("</div>")
+    body_parts.append('<div class="header-left">')
+    body_parts.append(f"<h1>{name}</h1>")
+    if intent:
+        body_parts.append(
+            f'<div class="subtitle">求职意向：{intent} ｜ {title}</div>'
+        )
+    else:
+        body_parts.append(f'<div class="subtitle">{title}</div>')
+    body_parts.append(
+        f'<div class="contact">{" ｜ ".join(contact_parts)}</div>'
+    )
+    if summary_text:
+        body_parts.append(
+            f'<div style="margin-top:10px; color:#4b5563; font-size:14px;">'
+            f"{summary_text}</div>"
+        )
+    body_parts.append("</div>")  # .header-left
 
-    # ── section body formatter ──
-    def _fmt_section(raw: str) -> str:
-        """Turn user text into entry-title + bullets HTML.
+    # avatar
+    body_parts.append('<div class="header-right">')
+    if avatar_path and os.path.isfile(avatar_path):
+        body_parts.append(
+            f'<img src="file:///{avatar_path.replace(chr(92), "/")}" '
+            f'alt="证件照">'
+        )
+    else:
+        body_parts.append(
+            '<div class="avatar-placeholder">点击<br>选择<br>照片</div>'
+        )
+    body_parts.append("</div>")  # .header-right
+    body_parts.append("</div>")  # .header
 
-        • Title ｜ Sub ｜ Date   → bold entry-title line with date right
-        • description line       → bullet <li>
-        Other lines             → plain <p>
-        """
-        if not raw or not raw.strip():
-            return ""
-        out, lines = [], raw.strip().split("\n")
-        i = 0
-        while i < len(lines):
-            s = lines[i].strip()
-            if not s:
-                i += 1
-                continue
+    # ── sections ──
 
-            if s.startswith("• ") and " ｜ " in s:
-                parts = s[2:].split(" ｜ ")
-                ttl, date = _esc(parts[0].strip()), ""
-                mid = ""
-                if len(parts) >= 2:
-                    date = _esc(parts[-1].strip())
-                if len(parts) >= 3:
-                    mid = " ｜ " + _esc(" ｜ ".join(parts[1:-1]))
-                out.append('<div class="entry">')
-                out.append('<div class="entry-title">')
-                out.append(f'<span class="title-text">{ttl}{mid}</span>')
-                if date:
-                    out.append(f'<span class="title-date">{date}</span>')
-                out.append('</div></div>')
-                out.append('<ul class="bullets">')
-                i += 1
-                while i < len(lines):
-                    sub = lines[i].strip()
-                    if not sub:
-                        i += 1; continue
-                    if sub.startswith("• ") and " ｜ " not in sub:
-                        out.append(f"<li>{_esc(sub[2:])}</li>")
-                        i += 1
-                    else:
-                        break
-                out.append('</ul>')
-                continue
-
-            elif s.startswith("• "):
-                out.append('<ul class="bullets">')
-                out.append(f"<li>{_esc(s[2:])}</li>")
-                i += 1
-                while i < len(lines):
-                    sub = lines[i].strip()
-                    if sub.startswith("• ") and " ｜ " not in sub:
-                        out.append(f"<li>{_esc(sub[2:])}</li>")
-                        i += 1
-                    elif not sub:
-                        i += 1
-                    else:
-                        break
-                out.append('</ul>')
-                continue
-
-            else:
-                out.append(f"<p>{_esc(s)}</p>")
-                i += 1
-
-        return "\n".join(out)
-
-    def _section(key: str, title_key: str, body_raw: str) -> None:
+    def _section(key: str, title_key: str, body: str) -> None:
+        """Append a section if visible."""
         if not options.get(f"show_{key}", True):
             return
-        html = _fmt_section(body_raw)
-        if not html:
+        if not body.strip():
             return
+        sec_title = _esc(options.get(title_key, ""))
         body_parts.append('<div class="section">')
-        body_parts.append(f'<div class="section-title">{_esc(options.get(title_key, ""))}</div>')
-        body_parts.append(html)
+        if sec_title:
+            body_parts.append(
+                f'<div class="section-title">{sec_title}</div>'
+            )
+        body_parts.append(f'<div class="section-body">{body}</div>')
         body_parts.append("</div>")
+
+    # intent section
+    if options.get("show_intent", True):
+        intent_body = f"<p>职位方向：{intent or '待补充'} ｜ 城市：{city or '待补充'}</p>"
+        _section("intent", "section_title_intent", intent_body)
 
     # education
-    edu = options.get("education_body") or ""
-    if not edu and student:
-        lb: List[str] = []
+    edu_body = _esc(options.get("education_body") or "")
+    if not edu_body and student:
+        # build fallback
+        lines = []
         if student.college or student.major:
-            yrs = f" {student.enrollment_year}.09 - {int(student.enrollment_year)+4}.06" if student.enrollment_year else ""
-            lb.append(f"• {_esc(student.college)} ｜ {_esc(student.major)} {_esc(options.get('degree','本科'))} ｜{yrs}")
+            lines.append(f"<p><b>{_esc(student.college)}</b> ｜ {_esc(student.major)}"
+                         f"{' ｜ ' + _esc(student.enrollment_year) + '级' if student.enrollment_year else ''}</p>")
         if courses:
-            ct = "、".join(f"{_esc(c.name)}（{_esc(c.grade)}）" if c.grade else _esc(c.name) for c in courses[:10])
-            lb.append(f"• 核心课程：{ct}")
+            ct = "、".join(
+                f"{_esc(c.name)}（{_esc(c.grade)}）" if c.grade else _esc(c.name)
+                for c in courses[:10]
+            )
+            lines.append(f"<p>核心课程：{ct}</p>")
         if overview:
-            lb.append(f"• GPA：{overview.get('weighted_average', 0):.2f}/100 ｜ 绩点：{overview.get('gpa', 0):.2f}")
-        edu = "\n".join(lb)
-    _section("education", "section_title_education", edu)
+            lines.append(
+                f"<p>GPA：{overview.get('weighted_average', 0):.2f}/100"
+                f" ｜ 绩点：{overview.get('gpa', 0):.2f}</p>"
+            )
+        edu_body = "\n".join(lines)
+    _section("education", "section_title_education",
+             edu_body.replace("\n", "<br>") if edu_body else "")
 
-    # academic / research / internship / awards
-    _section("academic", "section_title_academic", options.get("academic_body") or "")
-    _section("research", "section_title_research", options.get("research_body") or "")
-    _section("internship", "section_title_internship", options.get("internship") or "")
-    _section("awards", "section_title_awards", options.get("awards") or "")
+    # skills
+    skills_body = _esc(options.get("skills_body") or (student.skills if student else ""))
+    _section("skills", "section_title_skills",
+             f"<p>{skills_body.replace(chr(10), '<br>')}</p>" if skills_body else "")
 
-    # other — bottom-line format
-    other_raw = options.get("other_body") or ""
-    if options.get("show_other", True) and other_raw.strip():
-        body_parts.append('<div class="section">')
-        body_parts.append(f'<div class="section-title">{_esc(options.get("section_title_other", "其它"))}</div>')
-        for line in other_raw.strip().split("\n"):
-            line = line.strip()
-            if not line:
-                continue
-            clean = line.removeprefix("• ").strip()
-            if "：" in clean:
-                lbl, val = clean.split("：", 1)
-                body_parts.append(f'<div class="bottom-line"><span class="lbl">{_esc(lbl.strip())}：</span>{_esc(val.strip())}</div>')
-            elif ":" in clean:
-                lbl, val = clean.split(":", 1)
-                body_parts.append(f'<div class="bottom-line"><span class="lbl">{_esc(lbl.strip())}：</span>{_esc(val.strip())}</div>')
-            else:
-                body_parts.append(f'<div class="bottom-line">{_esc(clean)}</div>')
-        body_parts.append("</div>")
+    # projects
+    proj_name = _esc(options.get("project_name") or "")
+    proj_body = _esc(options.get("project_body") or "")
+    if proj_name and proj_body:
+        proj_html = f"<p><b>{proj_name}</b></p><p>{proj_body.replace(chr(10), '<br>')}</p>"
+    elif proj_body:
+        proj_html = f"<p>{proj_body.replace(chr(10), '<br>')}</p>"
+    else:
+        proj_html = ""
+    _section("projects", "section_title_projects", proj_html)
+
+    # internship
+    intern_body = _esc(options.get("internship") or "")
+    _section("internship", "section_title_internship",
+             f"<p>{intern_body.replace(chr(10), '<br>')}</p>" if intern_body else "")
+
+    # awards
+    awards_body = _esc(options.get("awards") or "")
+    _section("awards", "section_title_awards",
+             f"<p>{awards_body.replace(chr(10), '<br>')}</p>" if awards_body else "")
+
+    # custom / self-evaluation
+    custom_body = _esc(options.get("custom_content") or "")
+    _section("custom", "section_title_custom",
+             f"<p>{custom_body.replace(chr(10), '<br>')}</p>" if custom_body else "")
 
     body_html = "\n".join(body_parts)
     return RESUME_HTML_TEMPLATE.format(title=name, body=body_html)
@@ -559,16 +524,30 @@ def build_resume_markdown(
         edu_body = "\n".join(edu_lines)
     _md_section("education", "section_title_education", edu_body)
 
-    # academic
-    _md_section("academic", "section_title_academic", options.get("academic_body") or "")
-    # research
-    _md_section("research", "section_title_research", options.get("research_body") or "")
+    # skills
+    skills_body = options.get("skills_body") or (student.skills if student else "")
+    _md_section("skills", "section_title_skills", skills_body)
+
+    # projects
+    proj_name = options.get("project_name") or ""
+    proj_body = options.get("project_body") or ""
+    if proj_name:
+        _md_section("projects", "section_title_projects",
+                    f"### {proj_name}\n{proj_body}")
+    else:
+        _md_section("projects", "section_title_projects", proj_body)
+
     # internship
-    _md_section("internship", "section_title_internship", options.get("internship") or "")
+    intern_body = options.get("internship") or ""
+    _md_section("internship", "section_title_internship", intern_body)
+
     # awards
-    _md_section("awards", "section_title_awards", options.get("awards") or "")
-    # other
-    _md_section("other", "section_title_other", options.get("other_body") or "")
+    awards_body = options.get("awards") or ""
+    _md_section("awards", "section_title_awards", awards_body)
+
+    # custom
+    custom_body = options.get("custom_content") or ""
+    _md_section("custom", "section_title_custom", custom_body)
 
     return "\n".join(lines)
 
@@ -600,6 +579,7 @@ def build_resume_json(
             "phone": options.get("phone") or (student.phone if student else ""),
             "city": options.get("city") or "",
             "summary": options.get("summary") or (student.summary if student else ""),
+            "avatar_path": options.get("avatar_path") or "",
         },
         "sections": [],
     }
@@ -631,11 +611,13 @@ def build_resume_json(
         edu_body = "\n".join(parts)
     _add_section("education", "section_title_education", edu_body)
 
-    _add_section("academic", "section_title_academic",
-                 options.get("academic_body") or "")
+    _add_section("skills", "section_title_skills",
+                 options.get("skills_body") or (student.skills if student else ""))
 
-    _add_section("research", "section_title_research",
-                 options.get("research_body") or "")
+    proj_body = options.get("project_body") or ""
+    proj_name = options.get("project_name") or ""
+    _add_section("projects", "section_title_projects",
+                 f"{proj_name}\n{proj_body}".strip())
 
     _add_section("internship", "section_title_internship",
                  options.get("internship") or "")
@@ -643,8 +625,8 @@ def build_resume_json(
     _add_section("awards", "section_title_awards",
                  options.get("awards") or "")
 
-    _add_section("other", "section_title_other",
-                 options.get("other_body") or "")
+    _add_section("custom", "section_title_custom",
+                 options.get("custom_content") or "")
 
     return resume
 

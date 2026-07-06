@@ -2,65 +2,59 @@
 {% block title %}经历与成果{% endblock %}
 
 {% block content %}
-<h1>🔬 经历与成果</h1>
-<p class="page-subtitle">记录科研、竞赛、实习与荣誉奖项</p>
+<h1>🔬 经历与成果管理</h1>
 
 <!-- Add Experience Form -->
-<details>
-    <summary>+ 添加经历</summary>
-    <form method="post" action="/experiences/add">
+<details style="margin-bottom: 16px;">
+    <summary style="cursor:pointer; font-weight:600; font-size:15px; padding:8px 0;">+ 添加经历</summary>
+    <form method="post" action="/experiences/add" style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:16px; margin-top:8px;">
         <input type="hidden" name="exp_id" value="">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <input name="title" placeholder="标题 *" required>
-            <select name="exp_type">
+            <input name="title" placeholder="标题 *" required style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <select name="exp_type" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
                 <option>项目</option><option>科研</option><option>竞赛</option><option>实习</option><option>其他</option>
             </select>
-            <input name="organization" placeholder="组织 / 公司">
-            <input name="role" placeholder="角色">
-            <input name="start_date" placeholder="开始日期 (如 2024-09)">
-            <input name="end_date" placeholder="结束日期">
+            <input name="organization" placeholder="组织 / 公司" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <input name="role" placeholder="角色" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <input name="start_date" placeholder="开始日期 (如 2024-09)" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <input name="end_date" placeholder="结束日期" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
         </div>
-        <textarea name="description" placeholder="描述" rows="2" style="width:100%;margin-top:10px;"></textarea>
-        <input name="outcome" placeholder="成果 / 收获" style="width:100%;margin-top:10px;">
+        <textarea name="description" placeholder="描述" rows="2" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:4px; margin-top:8px;"></textarea>
+        <input name="outcome" placeholder="成果 / 收获" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:4px; margin-top:8px;">
         <button type="submit" class="btn btn-primary" style="margin-top:10px;">添加经历</button>
     </form>
 </details>
 
 <!-- Add Achievement Form -->
-<details>
-    <summary>+ 添加奖项/成果</summary>
-    <form method="post" action="/achievements/add">
+<details style="margin-bottom: 16px;">
+    <summary style="cursor:pointer; font-weight:600; font-size:15px; padding:8px 0;">+ 添加奖项/成果</summary>
+    <form method="post" action="/achievements/add" style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:16px; margin-top:8px;">
         <input type="hidden" name="ach_id" value="">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <input name="title" placeholder="奖项名称 *" required>
-            <select name="ach_type">
+            <input name="title" placeholder="奖项名称 *" required style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <select name="ach_type" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
                 <option>奖项</option><option>奖学金</option><option>荣誉</option><option>证书</option><option>其他</option>
             </select>
-            <input name="issuer" placeholder="颁发机构">
-            <input name="date" placeholder="日期 (如 2025-06)">
+            <input name="issuer" placeholder="颁发机构" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <input name="date" placeholder="日期 (如 2025-06)" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
         </div>
-        <textarea name="description" placeholder="描述" rows="2" style="width:100%;margin-top:10px;"></textarea>
+        <textarea name="description" placeholder="描述" rows="2" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:4px; margin-top:8px;"></textarea>
         <button type="submit" class="btn btn-primary" style="margin-top:10px;">添加奖项</button>
     </form>
 </details>
 
-<!-- Experiences by category -->
+<!-- Experiences -->
 {% set research = experiences|selectattr('exp_type', 'in', ['科研','项目'])|list %}
 {% set competitions = experiences|selectattr('exp_type', 'eq', '竞赛')|list %}
 {% set intern_exp = experiences|selectattr('exp_type', 'eq', '实习')|list %}
 {% set others = experiences|rejectattr('exp_type', 'in', ['科研','项目','竞赛','实习'])|list %}
 
-{% for sec_title, items, icon in [
-    ('科研 / 项目', research, '🔬'),
-    ('竞赛', competitions, '🏆'),
-    ('实习', intern_exp, '💼'),
-    ('其他', others, '📌'),
-] %}
+{% for sec_title, items in [('📡 科研 / 项目', research), ('🏆 竞赛', competitions), ('💼 实习', intern_exp), ('📌 其他', others)] %}
 {% if items %}
 <div class="card">
-    <h2><span class="icon">{{ icon }}</span> {{ sec_title }} <span class="text-muted" style="font-weight:400;font-size:13px;">· {{ items|length }} 项</span></h2>
+    <h2>{{ sec_title }} ({{ items|length }})</h2>
     <table>
-        <thead><tr><th>标题</th><th>组织</th><th>角色</th><th>时间</th><th style="width:50px;"></th></tr></thead>
+        <thead><tr><th>标题</th><th>组织</th><th>角色</th><th>时间</th><th>操作</th></tr></thead>
         <tbody>
             {% for e in items %}
             <tr>
@@ -68,8 +62,7 @@
                 <td class="text-muted">{{ e.organization or '-' }}</td>
                 <td>{{ e.role or '-' }}</td>
                 <td style="font-size:12px;">{{ e.start_date }} ~ {{ e.end_date }}</td>
-                <td><a href="/experiences/delete/{{ e.exp_id }}" onclick="return confirm('确定删除？')"
-                       style="color:var(--coral);font-size:11px;font-weight:500;">删除</a></td>
+                <td><a href="/experiences/delete/{{ e.exp_id }}" onclick="return confirm('确定删除？')" style="color:#cd3131; font-size:12px;">删除</a></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -84,10 +77,10 @@
     {% set _ = ach_data.items.append(a) %}
 {% endfor %}
 {% if ach_data.items %}
-<div class="card card-highlight">
-    <h2><span class="icon">🏅</span> 荣誉奖项 <span class="text-muted" style="font-weight:400;font-size:13px;">· {{ ach_data.items|length }} 项</span></h2>
+<div class="card">
+    <h2>🏅 荣誉奖项 ({{ ach_data.items|length }})</h2>
     <table>
-        <thead><tr><th>标题</th><th>类型</th><th>颁发机构</th><th>日期</th><th style="width:50px;"></th></tr></thead>
+        <thead><tr><th>标题</th><th>类型</th><th>颁发机构</th><th>日期</th><th>操作</th></tr></thead>
         <tbody>
             {% for a in ach_data.items %}
             <tr>
@@ -95,8 +88,7 @@
                 <td><span class="badge badge-purple">{{ a.ach_type }}</span></td>
                 <td class="text-muted">{{ a.issuer or '-' }}</td>
                 <td>{{ a.date }}</td>
-                <td><a href="/achievements/delete/{{ a.ach_id }}" onclick="return confirm('确定删除？')"
-                       style="color:var(--coral);font-size:11px;font-weight:500;">删除</a></td>
+                <td><a href="/achievements/delete/{{ a.ach_id }}" onclick="return confirm('确定删除？')" style="color:#cd3131; font-size:12px;">删除</a></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -105,9 +97,6 @@
 {% endif %}
 
 {% if not experiences and not achievements %}
-<div class="card" style="text-align:center;padding:40px;">
-    <div style="font-size:48px;margin-bottom:12px;">🌟</div>
-    <p class="text-muted">还没有经历或奖项记录。用上方的表单开始记录！</p>
-</div>
+<div class="card"><p class="text-muted">还没有经历或奖项。用上方的表单添加。</p></div>
 {% endif %}
 {% endblock %}

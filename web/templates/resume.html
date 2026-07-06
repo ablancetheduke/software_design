@@ -2,33 +2,27 @@
 {% block title %}简历工作台{% endblock %}
 
 {% block content %}
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
-    <div>
-        <h1 style="margin-bottom:4px;">📄 简历工作台</h1>
-        <p class="page-subtitle" style="margin-bottom:0;">智能生成 · 一键导出</p>
-    </div>
-    <div class="btn-group">
-        <a href="/api/resume/html" class="btn btn-primary">⬇ 下载 HTML 简历</a>
-        <a href="/api/resume/pdf" class="btn">⬇ 下载 PDF 简历</a>
-    </div>
-</div>
+<h1>📄 简历工作台</h1>
 
 <div class="card">
-    <details style="margin-bottom:0;">
-        <summary style="background:transparent;border:none;color:var(--fg-muted);font-size:13px;padding:8px 0;">
-            ⚙️ 配置信息：{{ options.get('name','') }} ｜ {{ options.get('school','') }} ｜ {{ options.get('major','') }}
+    <div class="btn-group" style="margin-bottom:16px;">
+        <a href="/api/resume/html" class="btn btn-primary">下载 HTML 简历</a>
+        <a href="/api/resume/pdf" class="btn">下载 PDF 简历</a>
+    </div>
+
+    <details style="margin-bottom:16px;">
+        <summary style="cursor:pointer; color:var(--fg-muted); font-size:14px;">
+            配置信息：{{ options.get('name','') }} ｜ {{ options.get('school','') }} ｜ {{ options.get('major','') }}
         </summary>
-        <table style="margin-top:12px;font-size:12px;">
-            <tr><td style="width:60px;font-weight:600;">姓名</td><td>{{ options.get('name','') }}</td><td style="width:60px;font-weight:600;">电话</td><td>{{ options.get('phone','') }}</td></tr>
-            <tr><td style="font-weight:600;">邮箱</td><td>{{ options.get('email','') }}</td><td style="font-weight:600;">城市</td><td>{{ options.get('city','') }}</td></tr>
-            <tr><td style="font-weight:600;">学校</td><td>{{ options.get('school','') }}</td><td style="font-weight:600;">专业</td><td>{{ options.get('major','') }}</td></tr>
-            <tr><td style="font-weight:600;">学历</td><td>{{ options.get('degree','') }}</td><td style="font-weight:600;">意向</td><td>{{ options.get('intent','') }}</td></tr>
+        <table style="margin-top:8px; font-size:13px;">
+            <tr><td style="width:80px;">姓名</td><td>{{ options.get('name','') }}</td><td style="width:80px;">电话</td><td>{{ options.get('phone','') }}</td></tr>
+            <tr><td>邮箱</td><td>{{ options.get('email','') }}</td><td>城市</td><td>{{ options.get('city','') }}</td></tr>
+            <tr><td>学校</td><td>{{ options.get('school','') }}</td><td>专业</td><td>{{ options.get('major','') }}</td></tr>
+            <tr><td>学历</td><td>{{ options.get('degree','') }}</td><td>意向</td><td>{{ options.get('intent','') }}</td></tr>
         </table>
     </details>
-</div>
 
-<div class="card" style="padding:0;overflow:hidden;">
-    <div class="resume-preview" style="box-shadow:none;margin:0;max-width:100%;">
+    <div class="resume-preview">
         {{ resume_html | safe }}
     </div>
 </div>

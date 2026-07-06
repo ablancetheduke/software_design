@@ -3,58 +3,52 @@
 
 {% block content %}
 <h1>📚 课程管理</h1>
-<p class="page-subtitle">管理你的课程记录，追踪每门课的成绩与学分</p>
 
-<!-- Quick Stats -->
 <div class="stat-grid">
     <div class="stat-card">
         <div class="value">{{ courses|length }}</div>
-        <div class="label">📖 总课程数</div>
+        <div class="label">总课程数</div>
     </div>
-    <div class="stat-card accent-green">
-        <div class="value">{{ "%.1f"|format(overview.get('total_credits', 0)) }}</div>
-        <div class="label">✅ 总学分</div>
+    <div class="stat-card">
+        <div class="value" style="color:#388a34;">{{ "%.1f"|format(overview.get('total_credits', 0)) }}</div>
+        <div class="label">总学分</div>
     </div>
-    <div class="stat-card accent-amber">
-        <div class="value">{{ "%.2f"|format(overview.get('weighted_average', 0)) }}</div>
-        <div class="label">🎯 加权平均分</div>
+    <div class="stat-card">
+        <div class="value" style="color:#8250df;">{{ "%.2f"|format(overview.get('weighted_average', 0)) }}</div>
+        <div class="label">加权平均分</div>
     </div>
 </div>
 
 <!-- Add Form -->
-<details>
-    <summary>+ 添加课程</summary>
-    <form method="post" action="/courses/add">
+<details style="margin-bottom: 16px;">
+    <summary style="cursor:pointer; font-weight:600; font-size:15px; padding:8px 0;">+ 添加课程</summary>
+    <form method="post" action="/courses/add" style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:16px; margin-top:8px;">
         <input type="hidden" name="course_id" value="">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <input name="name" placeholder="课程名称 *" required>
-            <input name="code" placeholder="课程代码（如 MAT108）">
-            <input name="credit" type="number" step="0.5" placeholder="学分">
-            <input name="grade" type="number" step="1" placeholder="成绩（百分制）">
-            <select name="semester">
+            <input name="name" placeholder="课程名称 *" required style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <input name="code" placeholder="课程代码（如 MAT108）" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <input name="credit" type="number" step="0.5" placeholder="学分" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <input name="grade" type="number" step="1" placeholder="成绩（百分制）" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
+            <select name="semester" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
                 <option value="">选择学期</option>
                 <option>大一上</option><option>大一下</option><option>大二上</option><option>大二下</option>
                 <option>大三上</option><option>大三下</option><option>大四上</option><option>大四下</option>
             </select>
-            <select name="category">
+            <select name="category" style="padding:8px; border:1px solid #d1d5db; border-radius:4px;">
                 <option>必修课</option><option>选修课</option><option>通识课</option>
             </select>
         </div>
-        <input name="note" placeholder="备注（如 [P/F]）" style="width:100%;margin-top:10px;">
+        <input name="note" placeholder="备注（如 [P/F]）" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:4px; margin-top:8px;">
         <button type="submit" class="btn btn-primary" style="margin-top:10px;">添加课程</button>
     </form>
 </details>
 
 {% for semester, group in semester_groups %}
 <div class="card">
-    <h2>
-        <span class="icon">📅</span>
-        {{ semester }}
-        <span class="text-muted" style="font-weight:400;font-size:13px;">· {{ group|length }} 门课程</span>
-    </h2>
+    <h2>{{ semester }} <span class="text-muted" style="font-weight:normal;font-size:14px;">({{ group|length }} 门)</span></h2>
     <table>
         <thead>
-            <tr><th>课程</th><th>代码</th><th>学分</th><th>成绩</th><th>类别</th><th>备注</th><th style="width:50px;"></th></tr>
+            <tr><th>课程</th><th>代码</th><th>学分</th><th>成绩</th><th>类别</th><th>备注</th><th>操作</th></tr>
         </thead>
         <tbody>
             {% for c in group %}
@@ -78,10 +72,9 @@
                     {% endif %}
                 </td>
                 <td>{{ c.category }}</td>
-                <td class="text-muted" style="font-size:11px;">{{ c.note or '' }}</td>
+                <td class="text-muted" style="font-size:12px;">{{ c.note or '' }}</td>
                 <td>
-                    <a href="/courses/delete/{{ c.course_id }}" onclick="return confirm('确定删除 {{ c.name }}？')"
-                       style="color:var(--coral);text-decoration:none;font-size:11px;font-weight:500;">删除</a>
+                    <a href="/courses/delete/{{ c.course_id }}" onclick="return confirm('确定删除 {{ c.name }}？')" style="color:#cd3131; text-decoration:none; font-size:12px;">删除</a>
                 </td>
             </tr>
             {% endfor %}
@@ -91,9 +84,6 @@
 {% endfor %}
 
 {% if not semester_groups %}
-<div class="card" style="text-align:center;padding:40px;">
-    <div style="font-size:48px;margin-bottom:12px;">📝</div>
-    <p class="text-muted">还没有课程记录，用上方的「添加课程」开始录入。</p>
-</div>
+<div class="card"><p class="text-muted">还没有课程，用上方的「添加课程」录入。</p></div>
 {% endif %}
 {% endblock %}
