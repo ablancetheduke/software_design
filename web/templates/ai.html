@@ -4,22 +4,63 @@
 {% block head_extra %}
 <style>
     .chat-container { max-width: 750px; margin: 0 auto; }
-    .chat-messages { max-height: 500px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: var(--card-bg); margin-bottom: 16px; }
-    .chat-msg { margin-bottom: 14px; padding: 12px 16px; border-radius: 10px; font-size: 14px; line-height: 1.65; }
-    .chat-msg.user { background: #fff8ec; border: 1px solid #f0d89c; }
-    .chat-msg.ai { background: #f0f6ff; border: 1px solid #b8d4f8; }
-    .chat-msg .label { font-weight: 700; font-size: 12px; margin-bottom: 4px; }
-    .chat-msg.user .label { color: var(--orange); }
-    .chat-msg.ai .label { color: var(--accent); }
+    .chat-messages {
+        max-height: 500px;
+        overflow-y: auto;
+        border: 1px solid rgba(0,0,0,0.06);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        background: var(--card-glass);
+        backdrop-filter: blur(12px);
+        margin-bottom: 16px;
+        box-shadow: var(--shadow-sm);
+    }
+    .chat-msg {
+        margin-bottom: 14px;
+        padding: 14px 18px;
+        border-radius: var(--radius);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+    .chat-msg.user {
+        background: linear-gradient(135deg, #fef3c7 0%, #fef9ed 100%);
+        border: 1px solid rgba(245,158,11,0.15);
+    }
+    .chat-msg.ai {
+        background: linear-gradient(135deg, #eff6ff 0%, #f5f9ff 100%);
+        border: 1px solid rgba(59,130,246,0.10);
+    }
+    .chat-msg .label {
+        font-weight: 700;
+        font-size: 12px;
+        margin-bottom: 6px;
+        letter-spacing: 0.3px;
+    }
+    .chat-msg.user .label { color: #d97706; }
+    .chat-msg.ai .label { color: var(--blue); }
     .chat-input-row { display: flex; gap: 10px; }
-    .chat-input-row input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
-    .chat-input-row button { padding: 10px 22px; }
+    .chat-input-row input {
+        flex: 1;
+        padding: 12px 18px;
+        border: 1px solid rgba(0,0,0,0.08);
+        border-radius: var(--radius-pill);
+        font-size: 14px;
+        font-family: inherit;
+        background: var(--card-glass);
+        backdrop-filter: blur(12px);
+        outline: none;
+        transition: all var(--transition-fast);
+    }
+    .chat-input-row input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(245,158,11,0.10);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <h1>🤖 AI 助手</h1>
-<p class="text-muted" style="margin-bottom:16px;">向 DeepSeek AI 提问，获取学业规划、简历优化、面试准备等建议。</p>
+<p class="page-subtitle">向 DeepSeek AI 提问，获取学业规划与简历优化建议</p>
 
 <div class="chat-container">
     <div class="chat-messages" id="chatMessages">
@@ -50,7 +91,6 @@ async function sendMessage() {
     input.value = '';
     input.disabled = true;
 
-    // Add loading indicator
     const loadingId = 'loading_' + Date.now();
     container.innerHTML += `<div class="chat-msg ai" id="${loadingId}"><div class="label">AI 助手</div><div>思考中...</div></div>`;
     container.scrollTop = container.scrollHeight;
@@ -62,7 +102,7 @@ async function sendMessage() {
         const data = await resp.json();
         document.getElementById(loadingId).innerHTML = `<div class="label">AI 助手</div><div>${escapeHtml(data.reply)}</div>`;
     } catch (e) {
-        document.getElementById(loadingId).innerHTML = `<div class="label">AI 助手</div><div style="color:#cd3131;">请求失败: ${e.message}</div>`;
+        document.getElementById(loadingId).innerHTML = `<div class="label">AI 助手</div><div style="color:#ef4444;">请求失败: ${e.message}</div>`;
     }
 
     input.disabled = false;

@@ -96,7 +96,7 @@ class AchievementView(QWidget):
         layout.setContentsMargins(12, 12, 12, 12)
 
         title = QLabel("荣誉与奖项")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
+        title.setStyleSheet(theme.section_title_style(22))
         layout.addWidget(title)
 
         toolbar = QHBoxLayout()

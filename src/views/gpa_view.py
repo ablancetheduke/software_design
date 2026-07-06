@@ -116,7 +116,7 @@ class TrendChart(QWidget):
         pct_lo, pct_hi = self._percent_range(self.trend)
 
         self._draw_series(
-            painter, "weighted_average", QColor(theme.accent),
+            painter, "weighted_average", QColor(theme.primary),
             pct_lo, pct_hi, left, top, chart_w, chart_h,
         )
         self._draw_series(
@@ -124,7 +124,7 @@ class TrendChart(QWidget):
             pct_lo, pct_hi, left, top, chart_w, chart_h,
         )
         self._draw_series(
-            painter, "gpa", QColor(theme.gold),
+            painter, "gpa", QColor(theme.blue),
             self.GPA_MIN, self.GPA_MAX, left, top, chart_w, chart_h,
         )
 
@@ -194,9 +194,9 @@ class TrendChart(QWidget):
     @staticmethod
     def _draw_legend(painter):
         items = [
-            ("加权平均", theme.accent),
+            ("加权平均", theme.primary),
             ("算术平均", theme.purple),
-            ("绩点", theme.gold),
+            ("绩点", theme.blue),
         ]
         x = 66
         painter.setFont(QFont("Microsoft YaHei", 9))
@@ -227,7 +227,7 @@ class TrendChart(QWidget):
         box_x = int(min(max(8, x + 12), self.width() - box_w - 8))
         box_y = 44
         painter.setBrush(QColor(theme.bg_card))
-        painter.setPen(QPen(QColor(theme.accent), 1))
+        painter.setPen(QPen(QColor(theme.primary), 1))
         painter.drawRoundedRect(box_x, box_y, box_w, box_h, 8, 8)
         painter.setPen(QColor(theme.fg))
         painter.drawText(box_x + 10, box_y + 18, text)
@@ -247,9 +247,7 @@ class GpaView(QWidget):
         layout.setSpacing(12)
 
         title = QLabel("成绩变化分析")
-        title.setStyleSheet(
-            f"font-size: 22px; font-weight: bold; color: {theme.fg};"
-        )
+        title.setStyleSheet(theme.section_title_style(22))
         layout.addWidget(title)
 
         subtitle = QLabel(
@@ -259,8 +257,8 @@ class GpaView(QWidget):
         layout.addWidget(subtitle)
 
         cards = QHBoxLayout()
-        self.gpa_card = StatCard("绩点", "0.00", theme.gold)
-        self.weighted_card = StatCard("加权平均分", "0.00", theme.accent)
+        self.gpa_card = StatCard("绩点", "0.00", theme.primary)
+        self.weighted_card = StatCard("加权平均分", "0.00", theme.blue)
         self.arithmetic_card = StatCard("算术平均分", "0.00", theme.purple)
         cards.addWidget(self.gpa_card)
         cards.addWidget(self.weighted_card)
@@ -284,14 +282,7 @@ class GpaView(QWidget):
             QHeaderView.ResizeMode.Stretch
         )
         self.semester_table.verticalHeader().setVisible(False)
-        self.semester_table.setStyleSheet(
-            f"QTableWidget {{ background-color: {theme.bg_card}; "
-            f"color: {theme.fg}; gridline-color: {theme.border}; }}"
-            f"QHeaderView::section {{ background-color: {theme.nav_hover_bg}; "
-            f"color: {theme.fg}; padding: 6px; border: none; }}"
-            f"QTableWidget::item:selected {{ background-color: {theme.bg_active}; "
-            f"color: {theme.fg}; }}"
-        )
+        self.semester_table.setStyleSheet(theme.table_style())
         layout.addWidget(self.semester_table)
 
         self.refresh()

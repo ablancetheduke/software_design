@@ -1,8 +1,26 @@
 """Main window — sidebar, content stack, AI panel, floating pet."""
 
 import os
+import sys
 
 from PySide6.QtCore import QEasingCurve, QVariantAnimation, Qt
+
+
+def _resource_path(*segments: str) -> str:
+    """Resolve a resource path that works both from source and from a
+    PyInstaller ``--onefile`` bundle.
+
+    In a PyInstaller bundle the tree of ``--add-data`` files is extracted
+    into :data:`sys._MEIPASS`, not next to the .exe.  So we look there
+    first; if the path does not exist we fall back to a CWD-relative path
+    (normal development mode).
+    """
+    if getattr(sys, "frozen", False):
+        # Running inside a PyInstaller bundle
+        bundled = os.path.join(sys._MEIPASS, *segments)
+        if os.path.exists(bundled):
+            return bundled
+    return os.path.join(*segments)
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -25,6 +43,7 @@ from .course_view import CourseView
 from .dashboard_view import DashboardView
 from .experience_view import ExperienceView
 from .gpa_view import GpaView
+from .graduate_view import GraduateView
 from .internship_view import InternshipView
 from .resume_view import ResumeView
 from .settings_view import SettingsView
@@ -55,6 +74,7 @@ PAGES = [
 
 OTHER_FEATURES = [
     ("coding_practice", "面试备战", CodingPracticeView),
+    ("graduate",       "升学规划", GraduateView),
 ]
 
 SETTINGS_KEY   = "settings"
@@ -66,38 +86,39 @@ SETTINGS_LABEL = "个人设置"
 # ═══════════════════════════════════════════════════════════════════════
 
 class NavButton(QPushButton):
-    """Sidebar navigation button — reads colours from ``theme`` so
-    it tracks the active light / dark mode on every paint cycle."""
+    """Sidebar navigation button — fitness dark sidebar style."""
 
     def __init__(self, text: str, indent: bool = False, parent=None):
-        super().__init__(f"  {text}", parent)
+        super().__init__(text, parent)
         self._indent = indent
         self.setCheckable(True)
         self.setFlat(True)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setMinimumHeight(44)
+        self.setMinimumHeight(42)
         self.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
         )
-        pad_left = 32 if self._indent else 16
+        pad_left = 28 if self._indent else 14
+        # use theme palette directly for dark sidebar
         self.setStyleSheet(f"""
             QPushButton {{
                 text-align: left;
-                padding: 8px 16px 8px {pad_left}px;
+                padding: 8px 14px 8px {pad_left}px;
                 border: none;
-                border-radius: 6px;
-                font-size: 14px;
-                color: #616161;
+                border-radius: 12px;
+                font-size: 13px;
+                font-weight: 500;
+                color: #9898a8;
                 background: transparent;
             }}
             QPushButton:hover {{
-                background: #e8e8e8;
-                color: #1f1f1f;
+                background: rgba(255,255,255,0.06);
+                color: #e0e0e8;
             }}
             QPushButton:checked {{
-                background: #d6ebff;
-                color: #1f1f1f;
-                font-weight: bold;
+                background: rgba(245,158,11,0.15);
+                color: #fbbf24;
+                font-weight: 700;
             }}
         """)
 
@@ -155,8 +176,8 @@ class MainWindow(QMainWindow):
         sb.setObjectName("SidebarFrame")
         sb.setFixedWidth(SIDEBAR_FULL)
         sb.setStyleSheet(
-            "QFrame#SidebarFrame { background: #f3f3f3; "
-            "border-right: 1px solid #e0e0e0; }"
+            "QFrame#SidebarFrame { background: #1c1c24; "
+            "border-right: 1px solid rgba(255,255,255,0.06); }"
         )
         self._sidebar = sb
         self._sidebar_layout = QVBoxLayout(sb)
@@ -167,10 +188,12 @@ class MainWindow(QMainWindow):
         hdr = QHBoxLayout()
         hdr.setContentsMargins(0, 0, 0, 0)
 
-        self._logo = QLabel("PDPTool")
+        self._logo = QLabel("PDP<span style='color:#f59e0b;'>Tool</span>")
+        self._logo.setTextFormat(Qt.TextFormat.RichText)
         self._logo.setObjectName("SidebarLogo")
         self._logo.setStyleSheet(
-            "font-size: 20px; font-weight: bold; padding: 8px 8px 16px 8px;"
+            "font-size: 18px; font-weight: 800; padding: 8px 8px 16px 8px;"
+            "color: #ffffff; letter-spacing: -0.5px;"
         )
         hdr.addWidget(self._logo)
         hdr.addStretch()
@@ -180,11 +203,11 @@ class MainWindow(QMainWindow):
         self._collapse_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._collapse_btn.setToolTip("折叠侧边栏")
         self._collapse_btn.setStyleSheet(
-            "QPushButton { font-size: 16px; color: #616161; "
-            "border: 1px solid #e0e0e0; border-radius: 6px; "
-            "background: #f3f3f3; }"
-            "QPushButton:hover { color: #1f1f1f; background: #e8e8e8; "
-            "border-color: #007acc; }"
+            "QPushButton { font-size: 16px; color: #787886; "
+            "border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; "
+            "background: transparent; }"
+            "QPushButton:hover { color: #fbbf24; background: rgba(255,255,255,0.06); "
+            "border-color: rgba(245,158,11,0.3); }"
         )
         self._collapse_btn.clicked.connect(self._toggle_sidebar)
         hdr.addWidget(self._collapse_btn)
@@ -212,9 +235,10 @@ class MainWindow(QMainWindow):
             self._other_header.setCursor(Qt.CursorShape.PointingHandCursor)
             self._other_header.setStyleSheet(
                 "QPushButton { text-align: left; padding: 6px 16px 4px 16px; "
-                "border: none; font-size: 11px; font-weight: bold; "
-                "color: #9e9e9e; background: transparent; }"
-                "QPushButton:hover { color: #616161; }"
+                "border: none; font-size: 10px; font-weight: 600; "
+                "color: rgba(255,255,255,0.25); background: transparent;"
+                "text-transform: uppercase; letter-spacing: 0.5px; }"
+                "QPushButton:hover { color: rgba(255,255,255,0.45); }"
             )
             self._other_header.clicked.connect(self._toggle_other_section)
             self._sidebar_layout.addWidget(self._other_header)
@@ -243,6 +267,7 @@ class MainWindow(QMainWindow):
         # version
         ver = QLabel(f"v{APP_VERSION}")
         ver.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ver.setStyleSheet("color: rgba(255,255,255,0.15); font-size: 10px;")
         self._sidebar_layout.addWidget(ver)
         self._sidebar_widgets.append(ver)  # type: ignore[attr-defined]
 
@@ -281,8 +306,8 @@ class MainWindow(QMainWindow):
         self._ai_wrapper.setMinimumWidth(0)
         self._ai_wrapper.setMaximumWidth(PANEL_MAX)
         self._ai_wrapper.setStyleSheet(
-            "#AiPanelWrapper { background: #f3f3f3; "
-            "border-left: 1px solid #e0e0e0; }"
+            "#AiPanelWrapper { background: #faf7f2; "
+            "border-left: 1px solid #e8e2d8; }"
         )
         wl = QVBoxLayout(self._ai_wrapper)
         wl.setContentsMargins(0, 0, 0, 0)
@@ -293,9 +318,9 @@ class MainWindow(QMainWindow):
         self._splitter.setHandleWidth(6)
         self._splitter.setChildrenCollapsible(False)
         self._splitter.setStyleSheet(
-            "QSplitter::handle { background: #e0e0e0; width: 6px; }"
-            "QSplitter::handle:hover { background: #007acc; }"
-            "QSplitter::handle:pressed { background: #0062a3; }"
+            "QSplitter::handle { background: #e8e2d8; width: 6px; }"
+            "QSplitter::handle:hover { background: #f59e0b; }"
+            "QSplitter::handle:pressed { background: #d97706; }"
         )
         self._splitter.addWidget(self._stack)
         self._splitter.addWidget(self._ai_wrapper)
@@ -327,6 +352,10 @@ class MainWindow(QMainWindow):
         if iv:
             iv.data_changed.connect(dv.refresh)
             iv.data_changed.connect(rv.refresh)
+
+        grad_v = self._page_views.get("graduate")
+        if grad_v:
+            grad_v.data_changed.connect(dv.refresh)
 
     # ── navigation ─────────────────────────────────────────────────
 
@@ -394,7 +423,7 @@ class MainWindow(QMainWindow):
     # ── pet ────────────────────────────────────────────────────────
 
     def _setup_pet(self):
-        path = os.path.join("assets", "assistant", "raiden_idle_clean.png")
+        path = _resource_path("assets", "assistant", "raiden_idle_clean.png")
         self._pet = AssistantPetWidget(path, self)
         self._pet.clicked.connect(self._toggle_ai_assistant)
         self._pet.hovered_changed.connect(self._on_pet_hovered)

@@ -3,84 +3,100 @@
 
 {% block content %}
 <h1>📈 成绩分析</h1>
+<p class="page-subtitle">追踪你的学业表现与学期变化趋势</p>
 
-<!-- Hero GPA -->
-<div class="card">
+<!-- Hero GPA Card -->
+<div class="card card-highlight">
     <div class="gpa-hero">
         {% set gpa_angle = (overview.get('gpa', 0) / 4.0 * 360)|int %}
         <div class="gpa-circle" style="--gpa-angle: {{ gpa_angle if gpa_angle <= 360 else 360 }}">
             <div class="gpa-value">{{ "%.2f"|format(overview.get('gpa', 0)) }}</div>
         </div>
-        <div>
+        <div style="flex:1;">
+            <div style="font-size:14px;color:var(--fg-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">当前绩点 · 4.0 制</div>
+            <div style="font-size:13px;color:var(--fg-muted);margin-bottom:16px;">
+                {% set gpa = overview.get('gpa', 0) %}
+                {% if gpa >= 3.7 %}🌟 表现卓越
+                {% elif gpa >= 3.3 %}👍 表现优秀
+                {% elif gpa >= 3.0 %}📚 稳步前进
+                {% elif gpa >= 2.0 %}💪 继续努力
+                {% else %}🎯 需要提升
+                {% endif %}
+            </div>
             <div class="stat-grid" style="margin-bottom:0;">
                 <div class="stat-card">
-                    <div class="value" style="font-size:28px;">{{ "%.2f"|format(overview.get('weighted_average', 0)) }}</div>
+                    <div class="value" style="font-size:26px;">{{ "%.2f"|format(overview.get('weighted_average', 0)) }}</div>
                     <div class="label">加权平均分</div>
                 </div>
                 <div class="stat-card">
-                    <div class="value" style="font-size:28px;color:#8250df;">{{ "%.2f"|format(overview.get('arithmetic_average', 0)) }}</div>
+                    <div class="value" style="font-size:26px;color:#7c3aed;">{{ "%.2f"|format(overview.get('arithmetic_average', 0)) }}</div>
                     <div class="label">算术平均分</div>
                 </div>
                 <div class="stat-card">
-                    <div class="value" style="font-size:28px;color:#388a34;">{{ "%.1f"|format(overview.get('total_credits', 0)) }}</div>
-                    <div class="label">总学分</div>
+                    <div class="value" style="font-size:26px;color:#059669;">{{ "%.1f"|format(overview.get('total_credits', 0)) }}</div>
+                    <div class="label">已修学分</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Semester Trend Table -->
+<!-- Semester Trend -->
 {% if semester_trend %}
-<div class="card">
-    <h2>学期趋势</h2>
-    <table>
-        <thead>
-            <tr><th>学期</th><th>GPA (4.0)</th><th>加权平均</th><th>算术平均</th><th>课程数</th><th>学分</th></tr>
-        </thead>
-        <tbody>
-            {% for sem in semester_trend %}
-            <tr>
-                <td><strong>{{ sem.semester }}</strong></td>
-                <td>
-                    {% set g = sem.gpa %}
-                    {% if g >= 3.7 %}<span class="badge badge-green">{{ "%.2f"|format(g) }}</span>
-                    {% elif g >= 3.0 %}<span class="badge badge-blue">{{ "%.2f"|format(g) }}</span>
-                    {% elif g >= 2.0 %}<span class="badge badge-orange">{{ "%.2f"|format(g) }}</span>
-                    {% else %}<span class="badge badge-red">{{ "%.2f"|format(g) }}</span>
-                    {% endif %}
-                </td>
-                <td>{{ "%.2f"|format(sem.weighted_average) }}</td>
-                <td>{{ "%.2f"|format(sem.arithmetic_average) }}</td>
-                <td>{{ sem.course_count }}</td>
-                <td>{{ "%.1f"|format(sem.total_credits) }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="card card-dark">
+    <h2>📅 学期趋势</h2>
+    <div style="display:flex;gap:16px;overflow-x:auto;padding:8px 0;">
+        {% for sem in semester_trend %}
+        <div style="background:rgba(255,255,255,0.05);border-radius:var(--radius);padding:16px 20px;min-width:150px;text-align:center;transition:all var(--transition);flex-shrink:0;"
+             onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.transform='translateY(-2px)';"
+             onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.transform='translateY(0)';">
+            <div style="font-size:12px;color:#888898;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">{{ sem.semester }}</div>
+            <div style="font-size:36px;font-weight:800;color:#fff;margin:8px 0;letter-spacing:-1px;">{{ "%.2f"|format(sem.gpa) }}</div>
+            <div style="font-size:11px;color:#888898;">GPA</div>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px;font-size:11px;color:#666678;">
+                <div><span style="color:#888898;">加权</span> {{ "%.2f"|format(sem.weighted_average) }}</div>
+                <div><span style="color:#888898;">算术</span> {{ "%.2f"|format(sem.arithmetic_average) }}</div>
+                <div><span style="color:#888898;">学分</span> {{ "%.1f"|format(sem.total_credits) }} · {{ sem.course_count }} 课</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endif %}
 
 <!-- Grade Distribution -->
 <div class="card">
-    <h2>成绩分布</h2>
+    <h2><span class="icon">📊</span> 成绩分布</h2>
     {% set g90 = courses|selectattr('grade', 'ge', 90)|list|length %}
     {% set g80 = courses|selectattr('grade', 'ge', 80)|rejectattr('grade', 'ge', 90)|list|length %}
     {% set g70 = courses|selectattr('grade', 'ge', 70)|rejectattr('grade', 'ge', 80)|list|length %}
     {% set g60 = courses|selectattr('grade', 'ge', 60)|rejectattr('grade', 'ge', 70)|list|length %}
     {% set gl60 = courses|rejectattr('grade', 'ge', 60)|list|length %}
-    <table>
-        <thead><tr><th>段位</th><th>数量</th><th>占比</th></tr></thead>
-        <tbody>
-            {% set total = courses|length %}
-            {% if total > 0 %}
-            <tr><td>≥ 90 优秀</td><td><span class="badge badge-green">{{ g90 }}</span></td><td>{{ "%.0f"|format(g90/total*100) }}%</td></tr>
-            <tr><td>80-89 良好</td><td><span class="badge badge-blue">{{ g80 }}</span></td><td>{{ "%.0f"|format(g80/total*100) }}%</td></tr>
-            <tr><td>70-79 中等</td><td>{{ g70 }}</td><td>{{ "%.0f"|format(g70/total*100) }}%</td></tr>
-            <tr><td>60-69 及格</td><td><span class="badge badge-orange">{{ g60 }}</span></td><td>{{ "%.0f"|format(g60/total*100) }}%</td></tr>
-            <tr><td>&lt; 60 不及格</td><td><span class="badge badge-red">{{ gl60 }}</span></td><td>{{ "%.0f"|format(gl60/total*100) }}%</td></tr>
-            {% endif %}
-        </tbody>
-    </table>
+    {% set total = courses|length %}
+
+    {% if total > 0 %}
+    <div style="display:flex;flex-direction:column;gap:14px;">
+        {% set segments = [
+            ('≥ 90 优秀', g90, '#10b981', 'green'),
+            ('80–89 良好', g80, '#3b82f6', 'blue'),
+            ('70–79 中等', g70, '#f59e0b', ''),
+            ('60–69 及格', g60, '#f97316', 'orange'),
+            ('< 60 不及格', gl60, '#f87171', 'coral'),
+        ] %}
+        {% for label, count, color, bar_class in segments %}
+        <div style="display:flex;align-items:center;gap:14px;">
+            <div style="width:110px;font-size:13px;font-weight:500;flex-shrink:0;">{{ label }}</div>
+            <div class="progress-bar {{ bar_class }}" style="flex:1;">
+                <div class="fill" style="width:{{ (count/total*100)|round|int if total > 0 else 0 }}%;background:{{ color }};"></div>
+            </div>
+            <div style="width:70px;text-align:right;font-size:13px;font-weight:600;flex-shrink:0;">{{ count }} <span style="color:var(--fg-muted);font-weight:400;">({{ "%.0f"|format(count/total*100) if total > 0 else 0 }}%)</span></div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:32px;color:var(--fg-muted);">
+        <p>还没有课程数据</p>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

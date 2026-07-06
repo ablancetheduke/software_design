@@ -41,7 +41,7 @@ class AiAssistantPanel(QWidget):
     @staticmethod
     def _t(key: str) -> str:
         return getattr(theme, {
-            "BG_PANEL": "bg_sidebar", "BG_CHAT": "bg_card",
+            "BG_PANEL": "bg_alt_row", "BG_CHAT": "bg_card",
             "BORDER": "border", "TEXT_MAIN": "fg",
             "TEXT_SUB": "fg_muted", "ACCENT": "accent",
             "ACCENT_HOV": "accent_hover", "AI_BUBBLE": "ai_bubble",

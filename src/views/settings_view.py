@@ -24,7 +24,7 @@ class SettingsView(QWidget):
         layout.setContentsMargins(20, 20, 20, 20)
 
         title = QLabel("个人信息设置")
-        title.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 10px;")
+        title.setStyleSheet(theme.section_title_style(22) + " margin-bottom: 10px;")
         layout.addWidget(title)
 
         # Basic info group

@@ -108,7 +108,7 @@ class InsightAnalyzer:
         if courses and gpa < 2.5:
             risks.append("当前 GPA 偏低，可标记薄弱课程并制定复盘计划。")
         if not experiences:
-            risks.append("缺少竞赛、项目、实习或科研经历，简历支撑会偏弱。")
+            risks.append("缺少学术、研究、实习或竞赛经历，简历支撑会偏弱。")
         if not achievements:
             risks.append("暂无荣誉/证书记录，成果展示维度不足。")
         if not roles:
@@ -124,8 +124,8 @@ class InsightAnalyzer:
             low_courses = [c.name for c in courses if c.grade and c.grade < 75]
             if low_courses:
                 suggestions.append(f"低分课程可单独复盘：{'、'.join(low_courses[:3])}。")
-        if not any(e.exp_type in ("项目", "科研", "实习") for e in experiences):
-            suggestions.append("可补充一个项目、科研或实习经历，便于简历展示。")
+        if not any(e.exp_type in ("学术经历", "研究经历", "实习经历") for e in experiences):
+            suggestions.append("可补充学术、研究或实习经历，便于简历展示。")
         if not achievements:
             suggestions.append("可以把证书、竞赛参与证明、课程项目奖项也纳入荣誉成果。")
         if gpa >= 3.5 and experiences:

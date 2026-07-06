@@ -20,8 +20,8 @@ GRADE_SCALE_100 = (0, 100)  # 百分制
 GRADE_SCALE_40 = (0.0, 4.0)  # 4.0 绩点制
 GRADE_SCALE_50 = (0.0, 5.0)  # 5.0 绩点制
 
-# Experience types
-EXPERIENCE_TYPES = ["竞赛", "项目", "实习", "科研", "其他"]
+# Experience types — 对应简历分区
+EXPERIENCE_TYPES = ["学术经历", "研究经历", "实习经历", "竞赛经历", "其它"]
 
 # Achievement types
 ACHIEVEMENT_TYPES = ["奖学金", "奖项", "荣誉", "证书", "其他"]
