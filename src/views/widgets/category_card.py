@@ -1,4 +1,4 @@
-"""CategoryCard — clickable curriculum category card with progress bar.
+"""CategoryCard — clickable curriculum category card with rounded progress bar.
 
 Used by: DashboardView.
 """
@@ -10,7 +10,7 @@ from ...utils.theme import theme
 
 
 class CategoryCard(QFrame):
-    """Clickable curriculum category card showing completion progress."""
+    """Clickable curriculum category card — rounded, warm style."""
 
     def __init__(self, result, color: str, on_click, parent=None):
         super().__init__(parent)
@@ -19,11 +19,11 @@ class CategoryCard(QFrame):
         self.on_click = on_click
         self.setObjectName("CategoryCard")
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setStyleSheet(theme.card_stylesheet(theme.border, hovered=False))
+        self._apply_style(hovered=False)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(14, 12, 14, 12)
-        layout.setSpacing(8)
+        layout.setContentsMargins(16, 14, 16, 14)
+        layout.setSpacing(10)
 
         required_text = (
             "-"
@@ -57,12 +57,38 @@ class CategoryCard(QFrame):
             else f"{min(100, percent)}%"
         )
         self.progress.setStyleSheet(
-            "QProgressBar { height: 14px; border: none; border-radius: 0; "
-            f"background-color: #eee7dc; text-align: center; font-size: 11px; color: {theme.fg}; }}"
-            f"QProgressBar::chunk {{ background-color: {color}; border-radius: 0; }}"
+            "QProgressBar {"
+            f"  height: 12px; border: none; border-radius: {theme.radius_pill};"
+            f"  background-color: {theme.bg_hover};"
+            f"  text-align: center; font-size: 11px; color: {theme.fg};"
+            f"}}"
+            f"QProgressBar::chunk {{"
+            f"  background-color: {color}; border-radius: {theme.radius_pill};"
+            f"}}"
+            f"QProgressBar::chunk:hover {{"
+            f"  background-color: {color};"
+            f"}}"
         )
         layout.addWidget(self.progress)
         self.setToolTip(self._tooltip_text())
+
+    def _apply_style(self, hovered: bool):
+        if hovered:
+            self.setStyleSheet(
+                f"CategoryCard {{"
+                f"  background: {theme.bg_card};"
+                f"  border: 2px solid {self.color};"
+                f"  border-radius: {theme.radius_lg};"
+                f"}}"
+            )
+        else:
+            self.setStyleSheet(
+                f"CategoryCard {{"
+                f"  background: {theme.bg_card};"
+                f"  border: 1px solid {theme.border};"
+                f"  border-radius: {theme.radius_lg};"
+                f"}}"
+            )
 
     def mousePressEvent(self, event):
         if self.on_click:
@@ -70,11 +96,11 @@ class CategoryCard(QFrame):
         super().mousePressEvent(event)
 
     def enterEvent(self, event):
-        self.setStyleSheet(theme.card_stylesheet(self.color, hovered=True))
+        self._apply_style(hovered=True)
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        self.setStyleSheet(theme.card_stylesheet(theme.border, hovered=False))
+        self._apply_style(hovered=False)
         super().leaveEvent(event)
 
     def _tooltip_text(self):

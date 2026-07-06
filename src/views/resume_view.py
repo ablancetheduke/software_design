@@ -60,29 +60,36 @@ from ..services.resume_exporter import (
     compute_default_options,
     export_html_to_pdf,
 )
+from ..services.resume_word_export import build_resume_docx
 from ..utils.theme import theme
 
 # ── constants ──────────────────────────────────────────────────────────────
 
 CANDIDATE_SOURCES = [
     ("课程亮点", "course"),
-    ("实践经历", "experience"),
-    ("成果记录", "achievement"),
-    ("角色职责", "role"),
+    ("学术经历", "academic"),
+    ("研究经历", "research"),
+    ("实习经历", "internship"),
+    ("竞赛获奖", "achievement"),
+    ("其它经历", "other"),
 ]
 
 SOURCE_TO_EDITOR = {
     "course": "education_body_edit",
-    "experience": "project_body_edit",
+    "academic": "academic_body_edit",
+    "research": "research_body_edit",
+    "internship": "internship_edit",
     "achievement": "awards_edit",
-    "role": "custom_content_edit",
+    "other": "other_body_edit",
 }
 
 SOURCE_TO_LABEL = {
     "course": "插入到教育背景",
-    "experience": "插入到项目经验",
+    "academic": "插入到学术经历",
+    "research": "插入到研究经历",
+    "internship": "插入到实习经历",
     "achievement": "插入到竞赛获奖",
-    "role": "插入到补充内容",
+    "other": "插入到其它",
 }
 
 
@@ -115,9 +122,9 @@ class CollapsibleSection(QWidget):
         self._header.setCursor(Qt.CursorShape.PointingHandCursor)
         self._header.setStyleSheet(
             f"QFrame {{"
-            f"  background: {theme.bg_sidebar};"
+            f"  background: {theme.bg_alt_row};"
             f"  border: 1px solid {theme.border};"
-            f"  border-radius: 6px;"
+            f"  border-radius: 10px;"
             f"  padding: 6px 10px;"
             f"}}"
             f"QFrame:hover {{ background: {theme.bg_hover}; }}"
@@ -303,6 +310,7 @@ class ResumeView(QWidget):
             ("导出 Markdown", self._export_markdown),
             ("导出 HTML", self._export_html),
             ("导出 PDF", self._export_pdf),
+            ("导出 Word", self._export_docx),
             ("浏览器预览", self._preview_browser),
         ]:
             btn = QPushButton(label)
@@ -376,12 +384,12 @@ class ResumeView(QWidget):
 
         layout.addWidget(sec_basic)
 
-        # ── Section: 教育信息 ──
-        sec_edu = CollapsibleSection("教育信息", expanded=True)
+        # ── Section: 教育背景 ──
+        sec_edu = CollapsibleSection("教育背景", expanded=True)
         cl = sec_edu.content_layout()
 
         row3 = QHBoxLayout()
-        self.school_edit = _make_line_edit("学校（如：信息学院）")
+        self.school_edit = _make_line_edit("学校（如：对外经济贸易大学）")
         self.school_edit.textChanged.connect(self._on_field_changed)
         self._line_edits["school"] = self.school_edit
         row3.addWidget(self.school_edit)
@@ -396,60 +404,40 @@ class ResumeView(QWidget):
         self._line_edits["degree"] = self.degree_edit
         cl.addWidget(self.degree_edit)
 
-        self.summary_edit = _make_text_edit(
-            "用 2-4 句话概括学习方向、实践重点和成长亮点。",
-            min_h=80,
-        )
-        self.summary_edit.textChanged.connect(self._on_field_changed)
-        self._text_edits["summary"] = self.summary_edit
-        cl.addWidget(self.summary_edit)
-
-        layout.addWidget(sec_edu)
-
-        # ── Section: 教育背景描述 ──
-        sec_edubody = CollapsibleSection("教育背景描述", expanded=True)
-        cl = sec_edubody.content_layout()
         self.education_body_edit = _make_text_edit(
-            "• GPA：85/100，专业排名前列\n"
-            "• 核心课程：机器学习、数据分析、数据库系统\n"
-            "• 荣誉：院级奖学金",
-            min_h=100,
+            "• 核心课程：数据结构与算法（90）、概率论与数理统计（93）、应用工程数学（91）\n"
+            "• GPA：87.44/100 | 专业排名：前5/34",
+            min_h=80,
         )
         self.education_body_edit.textChanged.connect(self._on_field_changed)
         self._text_edits["education_body"] = self.education_body_edit
         cl.addWidget(self.education_body_edit)
-        layout.addWidget(sec_edubody)
 
-        # ── Section: 技能特长 ──
-        sec_skills = CollapsibleSection("技能特长", expanded=True)
-        cl = sec_skills.content_layout()
-        self.skills_body_edit = _make_text_edit(
-            "• 熟悉 Python、SQL 与数据分析流程\n"
-            "• 能够使用 PySide6、Flask 完成项目开发",
-            min_h=100,
+        layout.addWidget(sec_edu)
+
+        # ── Section: 学术经历 ──
+        sec_academic = CollapsibleSection("学术经历", expanded=True)
+        cl = sec_academic.content_layout()
+        self.academic_body_edit = _make_text_edit(
+            "• 论文/专利/学术成果名称 ｜ 机构 ｜ 时间\n• 描述研究背景、方法和创新点",
+            min_h=120,
         )
-        self.skills_body_edit.textChanged.connect(self._on_field_changed)
-        self._text_edits["skills_body"] = self.skills_body_edit
-        cl.addWidget(self.skills_body_edit)
-        layout.addWidget(sec_skills)
+        self.academic_body_edit.textChanged.connect(self._on_field_changed)
+        self._text_edits["academic_body"] = self.academic_body_edit
+        cl.addWidget(self.academic_body_edit)
+        layout.addWidget(sec_academic)
 
-        # ── Section: 项目经验 ──
-        sec_proj = CollapsibleSection("项目经验", expanded=True)
-        cl = sec_proj.content_layout()
-        self.project_name_edit = _make_line_edit("项目名称（如：个人发展规划系统）")
-        self.project_name_edit.textChanged.connect(self._on_field_changed)
-        self._line_edits["project_name"] = self.project_name_edit
-        cl.addWidget(self.project_name_edit)
-
-        self.project_body_edit = _make_text_edit(
-            "• 负责系统设计、模块拆分与界面实现\n"
-            "• 完成课程、经历、目标、AI 助手等模块联动",
-            min_h=110,
+        # ── Section: 研究经历 ──
+        sec_research = CollapsibleSection("研究经历", expanded=True)
+        cl = sec_research.content_layout()
+        self.research_body_edit = _make_text_edit(
+            "• 课题/项目名称 ｜ 导师/机构 ｜ 时间\n• 描述研究目标、方法和成果",
+            min_h=120,
         )
-        self.project_body_edit.textChanged.connect(self._on_field_changed)
-        self._text_edits["project_body"] = self.project_body_edit
-        cl.addWidget(self.project_body_edit)
-        layout.addWidget(sec_proj)
+        self.research_body_edit.textChanged.connect(self._on_field_changed)
+        self._text_edits["research_body"] = self.research_body_edit
+        cl.addWidget(self.research_body_edit)
+        layout.addWidget(sec_research)
 
         # ── Section: 实习经历 ──
         sec_intern = CollapsibleSection("实习经历", expanded=True)
@@ -464,71 +452,32 @@ class ResumeView(QWidget):
         layout.addWidget(sec_intern)
 
         # ── Section: 竞赛获奖 ──
-        sec_awards = CollapsibleSection("竞赛获奖", expanded=False)
-        cl = sec_awards.content_layout()
+        sec_competition = CollapsibleSection("竞赛获奖", expanded=True)
+        cl = sec_competition.content_layout()
         self.awards_edit = _make_text_edit(
-            "• 奖项名称 ｜ 级别 ｜ 颁发机构 ｜ 日期\n• 描述成果价值和影响",
-            min_h=100,
+            "• 竞赛/奖项名称 ｜ 级别/颁发机构 ｜ 日期\n• 描述所做工作和成果",
+            min_h=120,
         )
         self.awards_edit.textChanged.connect(self._on_field_changed)
         self._text_edits["awards"] = self.awards_edit
         cl.addWidget(self.awards_edit)
-        layout.addWidget(sec_awards)
+        layout.addWidget(sec_competition)
 
-        # ── Section: 补充内容 ──
-        sec_custom = CollapsibleSection("补充内容 / 自我评价", expanded=False)
-        cl = sec_custom.content_layout()
-        self.custom_content_edit = _make_text_edit(
-            "可补充个人优势、职业目标、社会活动等。\n"
-            "右侧素材面板支持点击插入，你也可以直接编辑。",
+        # ── Section: 其它 ──
+        sec_other = CollapsibleSection("其它", expanded=True)
+        cl = sec_other.content_layout()
+        self.other_body_edit = _make_text_edit(
+            "• 语言：英语（CET-4 617）\n"
+            "• 技能：Python、MySQL、Transformers、R\n"
+            "• 兴趣：数据分析\n"
+            "• 学生工作：学院团委组织部、学院篮球队成员",
             min_h=100,
         )
-        self.custom_content_edit.textChanged.connect(self._on_field_changed)
-        self._text_edits["custom_content"] = self.custom_content_edit
-        cl.addWidget(self.custom_content_edit)
-        layout.addWidget(sec_custom)
+        self.other_body_edit.textChanged.connect(self._on_field_changed)
+        self._text_edits["other_body"] = self.other_body_edit
+        cl.addWidget(self.other_body_edit)
+        layout.addWidget(sec_other)
 
-        # ── Section: 课程选择 ──
-        sec_courses = CollapsibleSection("选择展示课程", expanded=False)
-        cl = sec_courses.content_layout()
-        self.course_table = QTableWidget()
-        self.course_table.setColumnCount(4)
-        self.course_table.setHorizontalHeaderLabels(["展示", "课程", "学分", "成绩"])
-        self.course_table.horizontalHeader().setSectionResizeMode(
-            1, QHeaderView.ResizeMode.Stretch
-        )
-        self.course_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.course_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.course_table.verticalHeader().setVisible(False)
-        self.course_table.setMinimumHeight(160)
-        self.course_table.setStyleSheet(theme.table_style())
-        cl.addWidget(self.course_table)
-        layout.addWidget(sec_courses)
-
-        # ── Section: 分区开关 ──
-        sec_toggles = CollapsibleSection("分区开关", expanded=False)
-        cl = sec_toggles.content_layout()
-        tg_hint = QLabel("控制简历中各区块的显示/隐藏：")
-        tg_hint.setStyleSheet(f"color: {theme.fg_muted}; font-size: 11px;")
-        cl.addWidget(tg_hint)
-
-        toggles = [
-            ("show_intent", "求职意向"),
-            ("show_education", "教育背景"),
-            ("show_skills", "技能特长"),
-            ("show_projects", "项目经验"),
-            ("show_internship", "实习经历"),
-            ("show_awards", "竞赛获奖"),
-            ("show_custom", "补充内容"),
-        ]
-        for key, label in toggles:
-            cb = _make_checkbox(label)
-            cb.setChecked(True)
-            cb.stateChanged.connect(self._on_field_changed)
-            self._checkboxes[key] = cb
-            cl.addWidget(cb)
-
-        layout.addWidget(sec_toggles)
         layout.addStretch()
 
         scroll.setWidget(content)
@@ -675,29 +624,24 @@ class ResumeView(QWidget):
             "school": self.school_edit.text().strip(),
             "major": self.major_edit.text().strip(),
             "degree": self.degree_edit.text().strip(),
-            "summary": self.summary_edit.toPlainText().strip(),
             "education_body": self.education_body_edit.toPlainText().strip(),
-            "skills_body": self.skills_body_edit.toPlainText().strip(),
-            "project_name": self.project_name_edit.text().strip(),
-            "project_body": self.project_body_edit.toPlainText().strip(),
+            "academic_body": self.academic_body_edit.toPlainText().strip(),
+            "research_body": self.research_body_edit.toPlainText().strip(),
             "internship": self.internship_edit.toPlainText().strip(),
             "awards": self.awards_edit.toPlainText().strip(),
-            "custom_content": self.custom_content_edit.toPlainText().strip(),
-            "avatar_path": "",
-            "section_title_intent": "求职意向",
+            "other_body": self.other_body_edit.toPlainText().strip(),
             "section_title_education": "教育背景",
-            "section_title_skills": "技能特长",
-            "section_title_projects": "项目经验",
+            "section_title_academic": "学术经历",
+            "section_title_research": "研究经历",
             "section_title_internship": "实习经历",
             "section_title_awards": "竞赛获奖",
-            "section_title_custom": "自我评价",
-            "show_intent": self._checkboxes.get("show_intent", QCheckBox()).isChecked() if "show_intent" in self._checkboxes else True,
-            "show_education": self._checkboxes.get("show_education", QCheckBox()).isChecked() if "show_education" in self._checkboxes else True,
-            "show_skills": self._checkboxes.get("show_skills", QCheckBox()).isChecked() if "show_skills" in self._checkboxes else True,
-            "show_projects": self._checkboxes.get("show_projects", QCheckBox()).isChecked() if "show_projects" in self._checkboxes else True,
-            "show_internship": self._checkboxes.get("show_internship", QCheckBox()).isChecked() if "show_internship" in self._checkboxes else True,
-            "show_awards": self._checkboxes.get("show_awards", QCheckBox()).isChecked() if "show_awards" in self._checkboxes else True,
-            "show_custom": self._checkboxes.get("show_custom", QCheckBox()).isChecked() if "show_custom" in self._checkboxes else True,
+            "section_title_other": "其它",
+            "show_education": True,
+            "show_academic": True,
+            "show_research": True,
+            "show_internship": True,
+            "show_awards": True,
+            "show_other": True,
         }
 
     def load_options(self, options: Dict[str, Any]):
@@ -712,40 +656,31 @@ class ResumeView(QWidget):
             (self.school_edit, "school"),
             (self.major_edit, "major"),
             (self.degree_edit, "degree"),
-            (self.project_name_edit, "project_name"),
         ]:
             edit.blockSignals(True)
             edit.setText(str(options.get(key, "")))
             edit.blockSignals(False)
 
         for edit, key in [
-            (self.summary_edit, "summary"),
             (self.education_body_edit, "education_body"),
-            (self.skills_body_edit, "skills_body"),
-            (self.project_body_edit, "project_body"),
+            (self.academic_body_edit, "academic_body"),
+            (self.research_body_edit, "research_body"),
             (self.internship_edit, "internship"),
             (self.awards_edit, "awards"),
-            (self.custom_content_edit, "custom_content"),
+            (self.other_body_edit, "other_body"),
         ]:
             edit.blockSignals(True)
             edit.setPlainText(str(options.get(key, "")))
             edit.blockSignals(False)
 
-        for key, cb in self._checkboxes.items():
-            cb.blockSignals(True)
-            cb.setChecked(options.get(key, True))
-            cb.blockSignals(False)
-
     # ── refresh ─────────────────────────────────────────────────────────
 
     def refresh(self):
-        self._load_courses()
-
         if self._first_load:
             self._first_load = False
             student = self.student_repo.get()
-            courses = self.course_repo.get_all()
-            overview = calculate_grade_overview(courses)
+            courses = sorted(self.course_repo.get_all(), key=lambda c: c.grade, reverse=True)[:8]
+            overview = calculate_grade_overview(self.course_repo.get_all())
             experiences = self.exp_repo.get_all()
             achievements = self.ach_repo.get_all()
             roles = self.role_repo.get_all()
@@ -758,67 +693,26 @@ class ResumeView(QWidget):
         self._populate_candidates()
         self._regenerate_preview()
 
-    def _selected_courses(self) -> list:
-        all_courses = sorted(self.course_repo.get_all(), key=lambda c: c.grade, reverse=True)
-        selected = []
-        for row, course in enumerate(all_courses):
-            cb = self.course_table.cellWidget(row, 0)
-            if cb and cb.isChecked():
-                selected.append(course)
-        return selected
-
-    def _load_courses(self):
-        courses = sorted(self.course_repo.get_all(), key=lambda c: c.grade, reverse=True)
-        self.course_table.setRowCount(len(courses))
-        restore_ids = self._selected_course_ids
-        if restore_ids is None:
-            default_ids = {c.course_id for c in courses[:8]}
-        else:
-            default_ids = restore_ids
-
-        for row, course in enumerate(courses):
-            checkbox = QCheckBox()
-            checkbox.setChecked(course.course_id in default_ids)
-            checkbox.stateChanged.connect(self._on_course_checkbox_changed)
-            self.course_table.setCellWidget(row, 0, checkbox)
-            self.course_table.setItem(row, 1, QTableWidgetItem(course.name))
-            self.course_table.setItem(row, 2, QTableWidgetItem(f"{course.credit:g}"))
-            self.course_table.setItem(row, 3, QTableWidgetItem(f"{course.grade:g}"))
-        self.course_table.resizeColumnsToContents()
-
-    def _on_course_checkbox_changed(self):
-        self._selected_course_ids = self._collect_checked_ids()
-
-    def _collect_checked_ids(self) -> set:
-        ids = set()
-        all_courses = sorted(self.course_repo.get_all(), key=lambda c: c.grade, reverse=True)
-        for row, course in enumerate(all_courses):
-            cb = self.course_table.cellWidget(row, 0)
-            if cb and cb.isChecked():
-                ids.add(course.course_id)
-        return ids
-
     # ── preview generation ─────────────────────────────────────────────
 
     def _regenerate_preview(self):
         options = self.collect_options()
         student = self.student_repo.get()
-        courses = self._selected_courses()
-        all_courses = self.course_repo.get_all()
-        overview = calculate_grade_overview(all_courses)
+        all_courses = sorted(self.course_repo.get_all(), key=lambda c: c.grade, reverse=True)[:8]
+        overview = calculate_grade_overview(self.course_repo.get_all())
         experiences = self.exp_repo.get_all()
         achievements = self.ach_repo.get_all()
         roles = self.role_repo.get_all()
 
         html = build_new_html(
-            options=options, student=student, courses=courses,
+            options=options, student=student, courses=all_courses,
             overview=overview, experiences=experiences,
             achievements=achievements, roles=roles,
         )
         self.html_preview.setHtml(html)
 
         md = build_new_md(
-            options=options, student=student, courses=courses,
+            options=options, student=student, courses=all_courses,
             overview=overview, experiences=experiences,
             achievements=achievements, roles=roles,
         )
@@ -835,8 +729,7 @@ class ResumeView(QWidget):
         student.phone = options.get("phone") or student.phone
         student.college = options.get("school") or student.college
         student.major = options.get("major") or student.major
-        student.summary = options.get("summary") or student.summary
-        student.skills = options.get("skills_body") or student.skills
+        student.skills = options.get("other_body") or student.skills
         self.student_repo.save(student)
 
     # ── candidate panel ────────────────────────────────────────────────
@@ -858,15 +751,56 @@ class ResumeView(QWidget):
                 )
                 self._add_item(title, detail, snippet)
 
-        elif key == "experience":
+        elif key == "academic":
             for e in self.exp_repo.get_all():
+                if e.exp_type != "学术经历":
+                    continue
                 title = e.title
                 dates = f"{e.start_date} - {e.end_date}".strip(" -")
-                detail = f"{e.exp_type} · {e.organization or '组织'} · {dates}"
+                detail = f"学术 · {e.organization or '机构'} · {dates}"
                 snippet = (
-                    f"经历：在{e.organization or '相关组织'}参与{e.title}，"
-                    f"担任{e.role or '核心成员'}。"
-                    f"{e.description or '可突出项目职责、方法与结果。'}"
+                    f"学术：{e.title}（{e.organization or '待补充'}）。"
+                    f"{e.description or '可突出研究背景、方法和创新点。'}"
+                )
+                self._add_item(title, detail, snippet)
+
+        elif key == "research":
+            for e in self.exp_repo.get_all():
+                if e.exp_type != "研究经历":
+                    continue
+                title = e.title
+                dates = f"{e.start_date} - {e.end_date}".strip(" -")
+                detail = f"研究 · {e.organization or '机构'} · {dates}"
+                snippet = (
+                    f"研究：{e.title}（{e.organization or '待补充'}）。"
+                    f"{e.description or '可突出研究目标、方法和成果。'}"
+                )
+                self._add_item(title, detail, snippet)
+
+        elif key == "internship":
+            for e in self.exp_repo.get_all():
+                if e.exp_type != "实习经历":
+                    continue
+                title = e.title
+                dates = f"{e.start_date} - {e.end_date}".strip(" -")
+                detail = f"实习 · {e.organization or '公司'} · {dates}"
+                snippet = (
+                    f"实习：{e.organization or '公司'}，{e.title}，"
+                    f"担任{e.role or '实习生'}。"
+                    f"{e.description or '可突出职责、方法和成果。'}"
+                )
+                self._add_item(title, detail, snippet)
+
+        elif key == "other":
+            for e in self.exp_repo.get_all():
+                if e.exp_type != "其它":
+                    continue
+                title = e.title
+                dates = f"{e.start_date} - {e.end_date}".strip(" -")
+                detail = f"其它 · {e.organization or '组织'} · {dates}"
+                snippet = (
+                    f"其它：{e.title}（{e.organization or '待补充'}）。"
+                    f"{e.description or '自由补充。'}"
                 )
                 self._add_item(title, detail, snippet)
 
@@ -905,8 +839,8 @@ class ResumeView(QWidget):
         if not snippet:
             return
         key = self.source_combo.currentData()
-        attr = SOURCE_TO_EDITOR.get(key, "custom_content")
-        target: QTextEdit = getattr(self, f"{attr}", self.custom_content_edit)
+        attr = SOURCE_TO_EDITOR.get(key, "other_body")
+        target: QTextEdit = getattr(self, f"{attr}", self.other_body_edit)
         existing = target.toPlainText().strip()
         if existing:
             target.setPlainText(existing + "\n• " + snippet)
@@ -998,7 +932,7 @@ class ResumeView(QWidget):
         """Export resume as PDF via QPrinter."""
         options = self.collect_options()
         student = self.student_repo.get()
-        courses = self._selected_courses()
+        courses = sorted(self.course_repo.get_all(), key=lambda c: c.grade, reverse=True)[:8]
         all_courses = self.course_repo.get_all()
         overview = calculate_grade_overview(all_courses)
         experiences = self.exp_repo.get_all()
@@ -1022,6 +956,35 @@ class ResumeView(QWidget):
             QMessageBox.information(self, "导出成功", f"PDF 简历已保存到:\n{filepath}")
         else:
             QMessageBox.critical(self, "错误", "PDF 导出失败，请检查 PySide6 QtPrintSupport 模块。")
+
+    def _export_docx(self):
+        """Export resume as Word .docx matching the user's reference format."""
+        options = self.collect_options()
+        student = self.student_repo.get()
+        courses = sorted(self.course_repo.get_all(), key=lambda c: c.grade, reverse=True)[:8]
+        all_courses = self.course_repo.get_all()
+        overview = calculate_grade_overview(all_courses)
+        experiences = self.exp_repo.get_all()
+        achievements = self.ach_repo.get_all()
+        roles = self.role_repo.get_all()
+
+        filepath, _ = QFileDialog.getSaveFileName(
+            self, "导出 Word 简历", "个人简历.docx",
+            "Word Files (*.docx);;All Files (*)",
+        )
+        if not filepath:
+            return
+
+        try:
+            build_resume_docx(
+                options=options, student=student, courses=courses,
+                overview=overview, experiences=experiences,
+                achievements=achievements, roles=roles,
+                output_path=filepath,
+            )
+            QMessageBox.information(self, "导出成功", f"Word 简历已保存到:\n{filepath}")
+        except Exception as e:
+            QMessageBox.critical(self, "导出失败", f"Word 导出失败: {e}")
 
     def _preview_browser(self):
         try:

@@ -16,10 +16,11 @@ from .widgets.record_table import RecordTable
 # Tab labels → (experience type filter, upload button label)
 TABS = [
     ("全部",            None,                 "全部经历"),
-    ("📐 科研 & 项目",  ["科研", "项目"],      "科研/项目经历"),
-    ("🏆 比赛",         ["竞赛"],              "比赛经历"),
-    ("💼 实习",         ["实习"],              "实习经历"),
-    ("📌 其他",         ["其他"],              "其他经历"),
+    ("🎓 学术经历",     ["学术经历"],          "学术经历"),
+    ("🔬 研究经历",     ["研究经历"],          "研究经历"),
+    ("💼 实习经历",     ["实习经历"],          "实习经历"),
+    ("🏆 竞赛经历",     ["竞赛经历"],          "竞赛经历"),
+    ("📌 其它",         ["其它"],              "其它经历"),
 ]
 
 
@@ -41,7 +42,7 @@ class ExperienceView(QWidget):
         layout.setContentsMargins(12, 12, 12, 12)
 
         title = QLabel("经历管理")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
+        title.setStyleSheet(theme.section_title_style(22))
         layout.addWidget(title)
 
         # ── toolbar ─────────────────────────────────────────────

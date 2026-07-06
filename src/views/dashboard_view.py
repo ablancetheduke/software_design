@@ -1,4 +1,4 @@
-"""Dashboard / home page with summary statistics."""
+"""Dashboard / home page — fitness-style summary with warm neumorphic cards."""
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QVBoxLayout,
     QWidget,
+    QHBoxLayout,
 )
 
 from ..database.repositories.achievement_repo import AchievementRepository
@@ -32,14 +33,21 @@ from ..utils.theme import theme
 
 
 class DashboardView(QWidget):
-    """Home dashboard showing summary of all data."""
+    """Home dashboard — warm beige fitness-style overview."""
 
-    # Per-audit palette of category colours
+    # Per-audit category accent colours
     CATEGORY_COLORS = [
-        f"{theme.accent}", "{theme.orange}", "{theme.green}", "{theme.fg_muted}",
-        f"{theme.gold}", "{theme.accent}", "{theme.orange}", "{theme.green}",
-        f"{theme.purple}", "{theme.accent}", "{theme.orange}", "{theme.fg_muted}",
+        f"{theme.primary}", f"{theme.blue}", f"{theme.green}", f"{theme.purple}",
+        f"{theme.orange}", f"{theme.primary}", f"{theme.blue}", f"{theme.green}",
+        f"{theme.purple}", f"{theme.orange}", f"{theme.primary}", f"{theme.blue}",
     ]
+
+    STAT_ACCENTS = {
+        "completion": theme.primary,
+        "credit": theme.green,
+        "activity": theme.coral,
+        "gpa": theme.purple,
+    }
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -59,11 +67,9 @@ class DashboardView(QWidget):
 
         self._setup_ui()
 
-    # ── Data bundle (loaded once per refresh) ──────────────────────
+    # ── Data bundle ────────────────────────────────────────────────────
 
     def _load_all_data(self):
-        """Load all data from repositories in one batch to avoid
-        repeated DB round-trips in refresh()."""
         courses = self.course_repo.get_all()
         return {
             "courses": courses,
@@ -78,11 +84,12 @@ class DashboardView(QWidget):
             "weighted": GpaCalculator(WeightedAverageStrategy()).calculate(courses),
         }
 
-    # ── UI construction ────────────────────────────────────────────
+    # ── UI construction ────────────────────────────────────────────────
 
     def _setup_ui(self):
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
+
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
@@ -93,60 +100,86 @@ class DashboardView(QWidget):
         content.setStyleSheet(f"background-color: {theme.bg};")
         scroll.setWidget(content)
         layout = QVBoxLayout(content)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(14)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(16)
 
+        # ── Header row ────────────────────────────────────────────────
+        header_row = QHBoxLayout()
+
+        header_text = QVBoxLayout()
         title = QLabel("情况总览")
-        title.setStyleSheet(
-            f"font-size: 24px; font-weight: bold; color: {theme.fg}; margin-bottom: 10px;"
-        )
-        layout.addWidget(title)
+        title.setStyleSheet(theme.section_title_style(26))
+        header_text.addWidget(title)
 
-        # Student name
         student = self.student_repo.get()
         name = (
             student.name
             if student and student.name != "未设置"
             else "同学"
         )
-        welcome = QLabel(f"欢迎，{name}！")
+        welcome = QLabel(f"欢迎回来，{name}！")
         welcome.setStyleSheet(
-            f"font-size: 16px; color: {theme.fg_muted}; margin-bottom: 20px;"
+            f"font-size: 14px; color: {theme.fg_muted}; font-weight: 400;"
         )
-        layout.addWidget(welcome)
+        header_text.addWidget(welcome)
+        header_row.addLayout(header_text)
+        header_row.addStretch()
 
-        # ── stat cards grid ──
+        # Pill badge
+        badge = QLabel("  📅 学期进行中  ")
+        badge.setStyleSheet(
+            f"background: {theme.bg_card}; color: {theme.fg_muted};"
+            f"border: 1px solid {theme.border}; border-radius: {theme.radius_pill};"
+            f"padding: 6px 16px; font-size: 12px; font-weight: 600;"
+        )
+        header_row.addWidget(badge)
+        layout.addLayout(header_row)
+
+        # ── Stat cards grid ───────────────────────────────────────────
         grid = QGridLayout()
-        grid.setSpacing(12)
+        grid.setSpacing(14)
 
-        self.completion_card = StatCard("培养方案完成度", "0%", f"{theme.accent}")
+        self.completion_card = StatCard(
+            "培养方案完成度", "0%", self.STAT_ACCENTS["completion"]
+        )
         grid.addWidget(self.completion_card, 0, 0)
 
-        self.credit_card = StatCard("总课程学分", "0", f"{theme.green}")
+        self.credit_card = StatCard(
+            "总课程学分", "0", self.STAT_ACCENTS["credit"]
+        )
         grid.addWidget(self.credit_card, 0, 1)
 
-        self.activity_card = StatCard("经历/荣誉/投递", "0", f"{theme.orange}")
+        self.activity_card = StatCard(
+            "经历/荣誉/投递", "0", self.STAT_ACCENTS["activity"]
+        )
         grid.addWidget(self.activity_card, 1, 0)
 
-        self.gpa_card = StatCard("GPA (4.0制)", "0.00", f"{theme.purple}")
+        self.gpa_card = StatCard(
+            "GPA (4.0制)", "0.00", self.STAT_ACCENTS["gpa"]
+        )
         grid.addWidget(self.gpa_card, 1, 1)
 
         layout.addLayout(grid)
 
-        # ── quick summary label ──
+        # ── Quick summary ─────────────────────────────────────────────
         self.summary_label = QLabel()
+        self.summary_label.setWordWrap(True)
         self.summary_label.setStyleSheet(
-            f"font-size: 14px; color: {theme.fg}; background-color: {theme.bg_card}; "
-            f"padding: 16px; border-radius: 6px; margin-top: 10px; border: 1px solid {theme.border};"
+            f"font-size: 13px; color: {theme.fg};"
+            f"background-color: {theme.bg_card};"
+            f"padding: 16px 20px; border-radius: {theme.radius_lg};"
+            f"border: 1px solid {theme.border};"
         )
         layout.addWidget(self.summary_label)
 
+        # ── Curriculum audit section ──────────────────────────────────
         plan_label = (
             f"培养方案分类审计（{self._plan_year + ' 级方案' if self._plan_year else '默认方案'}）"
         )
         self.curriculum_title = QLabel(plan_label)
         self.curriculum_title.setStyleSheet(
-            f"font-size: 18px; font-weight: bold; margin-top: 8px; color: {theme.fg};"
+            f"font-size: 17px; font-weight: 700; margin-top: 4px;"
+            f"color: {theme.fg};"
         )
         layout.addWidget(self.curriculum_title)
 
@@ -155,34 +188,34 @@ class DashboardView(QWidget):
                 "💡 提示：在「个人设置」中设置入学年份后，"
                 "将使用对应年级的培养方案进行审计。"
             )
-            hint.setStyleSheet(
-                f"font-size: 12px; color: {theme.fg_muted}; "
-                f"background-color: {theme.warn_bg}; border: 1px solid {theme.warn_border}; "
-                "border-radius: 6px; padding: 8px 12px;"
-            )
             hint.setWordWrap(True)
+            hint.setStyleSheet(theme.warning_infobar_style())
             layout.addWidget(hint)
 
         self.curriculum_grid = QGridLayout()
-        self.curriculum_grid.setSpacing(10)
+        self.curriculum_grid.setSpacing(12)
         layout.addLayout(self.curriculum_grid)
 
         self.curriculum_detail = QLabel()
         self.curriculum_detail.setWordWrap(True)
         self.curriculum_detail.setTextFormat(Qt.TextFormat.RichText)
         self.curriculum_detail.setStyleSheet(
-            f"font-size: 13px; color: {theme.fg}; background-color: {theme.ai_bubble}; "
-            f"padding: 12px; border-radius: 6px; border: 1px solid {theme.accent};"
+            f"font-size: 13px; color: {theme.fg};"
+            f"background-color: {theme.ai_bubble};"
+            f"padding: 14px 18px; border-radius: {theme.radius_md};"
+            f"border: 1px solid {theme.blue_light};"
         )
         layout.addWidget(self.curriculum_detail)
 
+        # ── Insight ───────────────────────────────────────────────────
         self.insight_label = QLabel()
         self.insight_label.setWordWrap(True)
         self.insight_label.setTextFormat(Qt.TextFormat.RichText)
         self.insight_label.setStyleSheet(
-            f"font-size: 13px; color: {theme.fg}; background-color: {theme.warn_bg}; "
-            f"padding: 14px; border-radius: 6px; border: 1px solid {theme.warn_border}; "
-            "margin-top: 15px;"
+            f"font-size: 13px; color: {theme.fg};"
+            f"background-color: {theme.warn_bg};"
+            f"padding: 16px 20px; border-radius: {theme.radius_md};"
+            f"border: 1px solid {theme.warn_border};"
         )
         layout.addWidget(self.insight_label)
 
@@ -191,14 +224,10 @@ class DashboardView(QWidget):
         # Load initial data
         self.refresh()
 
-    # ── refresh ────────────────────────────────────────────────────
+    # ── refresh ────────────────────────────────────────────────────────
 
     def refresh(self):
-        """Refresh all statistics (called when data changes).
-
-        Loads all data once, then delegates to targeted update methods.
-        """
-        # re-check plan year in case user changed it in settings
+        # re-check plan year
         student = self.student_repo.get()
         new_year = (
             (student.enrollment_year or "").strip() if student else ""
@@ -217,7 +246,7 @@ class DashboardView(QWidget):
         self._update_curriculum_audit(data)
         self._update_insight(data)
 
-    # ── card updates ───────────────────────────────────────────────
+    # ── card updates ───────────────────────────────────────────────────
 
     def _update_cards(self, data: dict):
         total_audit = data["total_audit"]
@@ -248,7 +277,7 @@ class DashboardView(QWidget):
         semesters = len({c.semester for c in courses if c.semester})
 
         self.summary_label.setText(
-            f"总览：培养方案目标 <b>{total_audit.required_credits:g}</b> 学分，"
+            f"📋 总览：培养方案目标 <b>{total_audit.required_credits:g}</b> 学分，"
             f"当前已匹配 <b>{total_audit.earned_credits:g}</b> 学分，"
             f"仍需 <b>{total_audit.remaining_credits:g}</b> 学分。"
             f"&nbsp;&nbsp;|&nbsp;&nbsp; "
@@ -257,7 +286,7 @@ class DashboardView(QWidget):
             f"加权平均: <b>{weighted['gpa']:.2f}</b>"
         )
 
-    # ── curriculum audit ───────────────────────────────────────────
+    # ── curriculum audit ───────────────────────────────────────────────
 
     def _update_curriculum_audit(self, data: dict):
         self._clear_layout(self.curriculum_grid)
@@ -289,7 +318,7 @@ class DashboardView(QWidget):
             )
         else:
             self.curriculum_detail.setText(
-                "当前培养方案分类均已达到目标学分。"
+                "✅ 当前培养方案分类均已达到目标学分。"
             )
 
     @staticmethod
@@ -304,7 +333,7 @@ class DashboardView(QWidget):
         dialog = CategoryDetailDialog(result, self)
         dialog.exec()
 
-    # ── insight ────────────────────────────────────────────────────
+    # ── insight ────────────────────────────────────────────────────────
 
     def _update_insight(self, data: dict):
         insight = self.insight_analyzer.analyze(
@@ -325,10 +354,10 @@ class DashboardView(QWidget):
             f"• {item}" for item in insight.suggestions[:4]
         )
         self.insight_label.setText(
-            f"<b>记录概览</b><br>"
+            f"<b>🧭 记录概览</b><br>"
             f"当前类型：<b>{insight.level}</b>　完整度：<b>{insight.score}/100</b><br>"
-            f"<span style=f'color:{theme.fg_muted}'>{{score_text}}</span><br><br>"
-            f"<b>亮点</b><br>{highlights}<br><br>"
-            f"<b>待补充内容</b><br>{risks}<br><br>"
-            f"<b>后续整理</b><br>{suggestions}"
+            f"<span style='color:{theme.fg_muted}'>{score_text}</span><br><br>"
+            f"<b>✨ 亮点</b><br>{highlights}<br><br>"
+            f"<b>⚠️ 待补充</b><br>{risks}<br><br>"
+            f"<b>💡 后续整理</b><br>{suggestions}"
         )

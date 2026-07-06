@@ -152,7 +152,7 @@ class CodingPracticeView(QWidget):
         # ── toolbar ─────────────────────────────────────────────
         tb = QFrame()
         tb.setStyleSheet(
-            f"QFrame {{ background: {T.bg_sidebar}; "
+            f"QFrame {{ background: {T.bg_alt_row}; "
             f"border-bottom: 1px solid {T.border}; }}"
         )
         tl = QHBoxLayout(tb)
@@ -211,7 +211,7 @@ class CodingPracticeView(QWidget):
 
         # Left: problem description
         left = QFrame()
-        left.setStyleSheet(f"QFrame {{ background: {T.bg_sidebar}; }}")
+        left.setStyleSheet(f"QFrame {{ background: {T.bg}; }}")
         ll = QVBoxLayout(left)
         ll.setContentsMargins(16, 16, 16, 16)
         ll.setSpacing(10)
@@ -230,7 +230,7 @@ class CodingPracticeView(QWidget):
 
         # Right: AI feedback + code editor
         right = QFrame()
-        right.setStyleSheet(f"QFrame {{ background: {T.bg_sidebar}; }}")
+        right.setStyleSheet(f"QFrame {{ background: {T.bg}; }}")
         rl = QVBoxLayout(right)
         rl.setContentsMargins(16, 16, 16, 16)
         rl.setSpacing(10)
@@ -407,7 +407,7 @@ class CodingPracticeView(QWidget):
         tags_html = ""
         if p.get("tags"):
             tags_html = "　".join(
-                f"<span style='background:{T.bg_sidebar}; padding:2px 8px; "
+                f"<span style='background:{T.bg_badge}; padding:2px 8px; "
                 f"border-radius:3px; font-size:11px; color:{T.fg_muted};'>"
                 f"#{t}</span>"
                 for t in p["tags"]

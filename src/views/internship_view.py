@@ -92,7 +92,7 @@ class InternshipView(QWidget):
 
         title_box = QVBoxLayout()
         title = QLabel("实习投递追踪")
-        title.setStyleSheet(f"font-size: 22px; font-weight: bold; color: {theme.fg};")
+        title.setStyleSheet(theme.section_title_style(22))
         subtitle = QLabel("集中记录岗位状态、截止日期、面试准备和后续跟进事项")
         subtitle.setStyleSheet(f"font-size: 13px; color: {theme.fg_muted};")
         title_box.addWidget(title)

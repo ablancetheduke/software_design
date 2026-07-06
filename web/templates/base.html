@@ -3,33 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}PDPTool{% endblock %} - 个人发展规划工具</title>
+    <title>{% block title %}PDPTool{% endblock %} — 个人发展规划</title>
     <link rel="stylesheet" href="/static/style.css">
     {% block head_extra %}{% endblock %}
 </head>
 <body>
 
-<!-- Sidebar -->
+<!-- Sidebar — icon-only, rounded floating container -->
 <aside class="sidebar">
     <div class="logo">PDP<span>Tool</span></div>
     <nav>
         {% set nav_items = [
-            ('dashboard', '📊', '情况总览'),
-            ('courses', '📚', '课程管理'),
-            ('gpa', '📈', '成绩分析'),
-            ('experiences', '🔬', '经历成果'),
-            ('internships', '💼', '实习追踪'),
-            ('resume', '📄', '简历工作台'),
-            ('ai', '🤖', 'AI 助手'),
-            ('coding', '💻', '编程练习'),
+            ('dashboard', '📊', '总览'),
+            ('courses', '📚', '课程'),
+            ('gpa', '📈', '成绩'),
+            ('experiences', '🔬', '经历'),
+            ('internships', '💼', '实习'),
+            ('resume', '📄', '简历'),
+            ('ai', '🤖', 'AI'),
+            ('coding', '💻', '编程'),
         ] %}
         {% for key, icon, label in nav_items %}
-        <a href="/{{ '' if key == 'dashboard' else key }}" class="{{ 'active' if nav_page == key else '' }}">
+        <a href="/{{ '' if key == 'dashboard' else key }}" class="{{ 'active' if nav_page == key else '' }}" title="{{ label }}">
             <span class="icon">{{ icon }}</span>{{ label }}
         </a>
         {% endfor %}
     </nav>
-    <div class="version">v1.1.0 · FastAPI</div>
+    <div class="version">v1.2</div>
 </aside>
 
 <!-- Main -->
