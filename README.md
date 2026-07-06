@@ -6,7 +6,7 @@
 
 ---
 
-> 💡 **关于本项目**：本仓库为课程小组作业的提交版本。项目的完整开发历程、更早的提交记录以及更完备的代码结构，请参见 [Software-architecture-design-group-assignment](https://github.com/ablancetheduke/Software-architecture-design-group-assignment) —— 那里收录了从项目立项到功能迭代的全部 commit 历史，所有代码均由同一开发者独立完成（包括架构设计、前后端实现、AI 集成与测试），更完整地体现了本项目的实际工作量与工程能力。因提交时间节点所限，此处为同步整理后的版本；如需了解完整的设计思路、设计模式应用分析以及详细的架构文档，也请优先查阅前述仓库中的 `pre.md`。
+> 💡 **关于本项目**：本仓库为课程小组作业的提交版本。项目的完整开发历程、更早的提交记录以及更完备的代码结构，请参见 [Software-architecture-design-group-assignment](https://github.com/ablancetheduke/Software-architecture-design-group-assignment) —— 那里收录了从项目立项到功能迭代的全部 commit 历史，所有代码均由开发者独立完成（包括架构设计、前后端实现、AI 集成与测试），更完整地体现了本项目的实际工作量与工程能力。因提交时间节点所限，此处为同步整理后的版本；如需了解完整的设计思路、设计模式应用分析以及详细的架构文档，也请优先查阅前述仓库中的 `pre.md`。
 
 ---
 
@@ -84,4 +84,4 @@ DEEPSEEK_API_KEY=你的key
 
 ## 维护者
 
-本项目（包括设计与编码）由 [@ablancetheduke](https://github.com/ablancetheduke) 独立完成。如对架构设计、实现细节或设计模式应用有疑问，欢迎提 Issue 或参考 [完整开发仓库](https://github.com/ablancetheduke/Software-architecture-design-group-assignment) 中的提交历史与设计文档。
+如对架构设计、实现细节或设计模式应用有疑问，欢迎直接联系[@ablancetheduke](https://github.com/ablancetheduke) 提 Issue 或参考 [完整开发仓库](https://github.com/ablancetheduke/Software-architecture-design-group-assignment) 中的提交历史与设计文档。
