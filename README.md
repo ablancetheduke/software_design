@@ -90,6 +90,20 @@ DEEPSEEK_API_KEY=你的key
 - **Strategy** — GPA 计算策略、简历导出策略
 - **Facade** — AI 服务统一调用接口
 
+---
+
+## 📋 提交记录与版本更新说明
+
+> **2026 年 7 月 5 日更新**：本仓库在同步最新代码（升学规划模块、PyInstaller 打包配置、Word 简历导出等）时，由于整体替换文件结构的操作不慎覆盖了小组同学此前在 6 月 25 日上传的原始文件（`LICENSE`、`Q&A.md`、`grades.csv`、`models/`、`utils/`、`views/` 等扁平结构代码及根级测试文件）。发现问题后已立即通过 `git revert` 恢复所有被覆盖的文件，并在保留小组全部原始贡献的前提下重新叠加了最新版本代码。
+>
+> 小组各成员的原始提交记录 **完整保留在 Git 历史中**，可通过 [Commits 页面](https://github.com/ablancetheduke/software_design/commits/main) 查看：
+> - **Camellia-224**（6 月 25 日 15:05）— `liushuhan add files`
+> - **zmjjbb11**（6 月 25 日 16:23）— `Add files via upload`
+> - **anzimu324-cell**（6 月 25 日 16:39）— `Add files via upload`
+> - **Lucaslee127**（6 月 25 日 20:38–20:43）— 多次 `Add files via upload`
+>
+> 这些提交记录和对应的时间戳均可追溯，体现了小组每位成员的实际贡献。本次 7 月 5 日的文件覆盖及恢复过程同样记录在 commit 历史中，操作透明可查。
+
 ## 维护者
 
 如对架构设计、实现细节或设计模式应用有疑问，欢迎直接联系 [@ablancetheduke](https://github.com/ablancetheduke) 提 Issue 或参考 [完整开发仓库](https://github.com/ablancetheduke/Software-architecture-design-group-assignment) 中的提交历史与设计文档。
